@@ -1,6 +1,8 @@
+
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import { useRouter } from 'next/navigation';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -18,7 +20,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Alert, AlertDescription, AlertTitle } from './ui/alert';
+import Link from 'next/link';
 
 interface PurchaseModalProps {
   product: Product;
@@ -38,7 +40,7 @@ export default function PurchaseModal({ product, onClose }: PurchaseModalProps) 
   const [isLoading, setIsLoading] = useState(false);
   const [orderId, setOrderId] = useState<string | null>(null);
   const [timeLeft, setTimeLeft] = useState(300); // 5 minutes in seconds
-
+  const router = useRouter();
   const { toast } = useToast();
 
   const handleClose = useCallback(() => {
@@ -46,6 +48,10 @@ export default function PurchaseModal({ product, onClose }: PurchaseModalProps) 
     setTimeout(onClose, 300); // Allow for closing animation
   }, [onClose]);
 
+  const goToOrderPage = () => {
+    handleClose();
+    router.push('/order');
+  };
 
   // Timer for QR code validity and UTR popup
   useEffect(() => {
@@ -195,6 +201,17 @@ export default function PurchaseModal({ product, onClose }: PurchaseModalProps) 
                     {isLoading ? <Loader2 className="animate-spin" /> : `Buy ($${product.price}) with Redeem Code`}
                     </Button>
                 </div>
+                <p className="text-xs text-muted-foreground text-center mt-2">
+                    By continuing, you accept our{' '}
+                    <Link href="/terms" className="underline hover:text-primary" onClick={handleClose}>
+                        Terms & Conditions
+                    </Link>{' '}
+                    and{' '}
+                    <Link href="/privacy" className="underline hover:text-primary" onClick={handleClose}>
+                        Privacy Policy
+                    </Link>
+                    .
+                </p>
             </div>
           </>
         );
@@ -221,6 +238,7 @@ export default function PurchaseModal({ product, onClose }: PurchaseModalProps) 
                             <Button asChild variant="outline"><a href={upiLink('phonepe')}>PhonePe</a></Button>
                          </div>
                     </div>
+                    <p className="text-xs text-muted-foreground font-semibold tracking-wider pt-2">Powered by UPI</p>
                 </div>
             </>
         )
@@ -267,7 +285,7 @@ export default function PurchaseModal({ product, onClose }: PurchaseModalProps) 
                 <h2 className="text-2xl font-headline">Order Under Processing</h2>
                 <p className="text-muted-foreground">Your order has been received and is now being processed. This usually takes just a few moments.</p>
                 <p>You can track the status of your order on the "Order" page.</p>
-                <Button onClick={handleClose}>Go to Orders Page</Button>
+                <Button onClick={goToOrderPage}>Go to Orders Page</Button>
             </div>
         )
       default:
