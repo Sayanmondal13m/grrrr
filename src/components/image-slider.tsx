@@ -17,7 +17,6 @@ const sliderImages = [
   { src: 'https://placehold.co/1200x400.png', alt: 'Epic battle scene from Free Fire', dataAiHint: 'gaming battle' },
   { src: 'https://placehold.co/1200x400.png', alt: 'Promotional banner for new game items', dataAiHint: 'gaming characters' },
   { src: 'https://placehold.co/1200x400.png', alt: 'Close-up of a rare in-game weapon', dataAiHint: 'game weapon' },
-  { src: 'https://placehold.co/1200x400.png', alt: 'Characters showing off new skins', dataAiHint: 'action scene' },
 ];
 
 export default function ImageSlider() {
