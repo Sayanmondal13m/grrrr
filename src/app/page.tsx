@@ -1,28 +1,33 @@
 
+
 import ImageSlider from '@/components/image-slider';
 import ProductCard from '@/components/product-card';
 import FaqChatbot from '@/components/faq-chatbot';
 import { getProducts } from './actions';
 import { type Metadata } from 'next';
+import { type Product } from '@/lib/definitions';
 
 export const metadata: Metadata = {
-  metadataBase: new URL('http://localhost:9002'),
+  metadataBase: new URL('http://www.garenagears.com'),
   title: 'Garena Gears - Free Fire Top-Up & Diamonds',
   description: 'The official, secure, and trusted Garena store for discounted Free Fire diamonds, memberships, and top-ups. Get unbeatable prices on in-game items for Free Fire MAX.',
   keywords: [
-    'Free Fire top up', 
-    'Free Fire MAX top up', 
-    'Garena', 
-    'Free Fire diamonds', 
-    'top-up', 
-    'in-game items', 
+    'Free Fire top up',
+    'Free Fire MAX top up',
+    'Garena',
+    'Free Fire diamonds',
+    'top-up',
+    'in-game items',
     'Garena Gears',
     'buy Free Fire diamonds',
     'Free Fire recharge',
     'Garena top up center',
     'Free Fire membership',
     'cheap Free Fire diamonds',
-    'how to top up Free Fire'
+    'how to top up Free Fire',
+    'Garena Free Fire',
+    'diamonds for Free Fire',
+    'game top up',
   ],
   openGraph: {
     title: 'Garena Gears - Free Fire Top-Up & Diamonds',
@@ -44,7 +49,7 @@ export default async function Home() {
             Purchase Item Now
           </h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 md:gap-8">
-            {products.map((product) => (
+            {products.map((product: Product) => (
               <ProductCard
                 key={product._id}
                 product={product}
