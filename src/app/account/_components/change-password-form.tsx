@@ -51,4 +51,5 @@ export default function ChangePasswordForm() {
         <SubmitButton />
       </div>
     </form>
-  
+  );
+}
