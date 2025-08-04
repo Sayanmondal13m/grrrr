@@ -690,17 +690,6 @@ export async function updateWithdrawalStatus(withdrawalId: string, status: 'Comp
         return { success: false, message: 'Withdrawal request not found or status already updated.' };
     }
 
-    // If a request fails, refund the money to the user's wallet
-    if (status === 'Failed') {
-        const withdrawal = await db.collection('withdrawals').findOne({ _id: new ObjectId(withdrawalId) });
-        if (withdrawal) {
-            await db.collection('users').updateOne(
-                { _id: new ObjectId(withdrawal.userId) },
-                { $inc: { walletBalance: withdrawal.amount } }
-            );
-        }
-    }
-
     revalidatePath('/admin/withdrawals');
     revalidatePath('/account');
     return { success: true };
