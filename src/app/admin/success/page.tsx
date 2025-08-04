@@ -1,3 +1,4 @@
+
 import { OrderList } from '../_components/order-list';
 import { connectToDatabase } from '@/lib/mongodb';
 import { Order } from '@/lib/definitions';
@@ -48,7 +49,7 @@ export default async function AdminSuccessPage({
       initialOrders={orders}
       title="Successful Orders"
       status={['Completed']}
-      getMoreOrders={(p, s, q) => getOrdersForPage(p, s, q)}
+      getMoreOrders={getOrdersForPage}
     />
   );
 }

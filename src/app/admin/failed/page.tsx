@@ -1,3 +1,4 @@
+
 import { OrderList } from '../_components/order-list';
 import { connectToDatabase } from '@/lib/mongodb';
 import { Order } from '@/lib/definitions';
@@ -49,7 +50,7 @@ export default async function AdminFailedPage({
       initialOrders={orders}
       title="Failed Orders"
       status={['Failed']}
-      getMoreOrders={(p, s, q) => getOrdersForPage(p, s, q)}
+      getMoreOrders={getOrdersForPage}
     />
   );
 }

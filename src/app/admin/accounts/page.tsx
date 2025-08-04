@@ -1,3 +1,4 @@
+
 import { connectToDatabase } from '@/lib/mongodb';
 import { User } from '@/lib/definitions';
 import AccountList from './_components/account-list';
@@ -46,7 +47,7 @@ export default async function AdminAccountsPage({
   return (
     <AccountList
       initialUsers={users}
-      getMoreUsers={(p, s, q) => getUsersForPage(p, s, q)}
+      getMoreUsers={getUsersForPage}
     />
   );
 }
