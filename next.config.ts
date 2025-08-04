@@ -19,9 +19,9 @@ const nextConfig: NextConfig = {
     ],
   },
    webpack: (config, { isServer }) => {
-    if (isServer) {
-      config.externals.push('mongodb-client-encryption');
-    }
+    // This is the standard solution to the "Module not found: Can't resolve 'child_process'" error with mongodb.
+    // It excludes a module that's not needed and causes build issues.
+    config.externals.push('mongodb-client-encryption');
     return config;
   }
 };
