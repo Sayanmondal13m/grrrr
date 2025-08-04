@@ -9,9 +9,9 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import type { Product } from '@/lib/definitions';
-import { Flame, Loader2, X, ShieldCheck, Smartphone, Globe, Info } from 'lucide-react';
+import { Flame, Loader2, X, ShieldCheck, Smartphone, Globe } from 'lucide-react';
 import Image from 'next/image';
-import { createUpiOrder, createRedeemCodeOrder, submitUtr } from '@/app/actions';
+import { createRedeemCodeOrder, submitUtr } from '@/app/actions';
 import QrCode from 'react-qr-code';
 import {
   Select,
@@ -27,7 +27,7 @@ interface PurchaseModalProps {
   onClose: () => void;
 }
 
-type ModalStep = 'details' | 'payment' | 'redeem' | 'utr' | 'processing' | 'success';
+type ModalStep = 'details' | 'payment' | 'redeem' | 'utr' | 'processing';
 
 const upiId = "9907703991-1@okbizaxis";
 
@@ -38,7 +38,6 @@ export default function PurchaseModal({ product, onClose }: PurchaseModalProps) 
   const [redeemCode, setRedeemCode] = useState('');
   const [utr, setUtr] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [orderId, setOrderId] = useState<string | null>(null);
   const [timeLeft, setTimeLeft] = useState(300); // 5 minutes in seconds
   const router = useRouter();
   const { toast } = useToast();
@@ -79,15 +78,7 @@ export default function PurchaseModal({ product, onClose }: PurchaseModalProps) 
       toast({ variant: 'destructive', title: 'Error', description: 'Please enter your Gaming ID.' });
       return;
     }
-    setIsLoading(true);
-    const result = await createUpiOrder(product, gamingId);
-    if (result.success && result.orderId) {
-      setOrderId(result.orderId);
-      setStep('payment');
-    } else {
-      toast({ variant: 'destructive', title: 'Error', description: result.message });
-    }
-    setIsLoading(false);
+    setStep('payment');
   };
 
   const handleBuyWithRedeemCode = async () => {
@@ -114,12 +105,12 @@ export default function PurchaseModal({ product, onClose }: PurchaseModalProps) 
   }
 
   const handleUtrSubmit = async () => {
-    if (!utr || !orderId) {
+    if (!utr) {
         toast({ variant: 'destructive', title: 'Error', description: 'Please enter the UTR.' });
         return;
     }
     setIsLoading(true);
-    const result = await submitUtr(orderId, utr);
+    const result = await submitUtr(product, gamingId, utr);
     if (result.success) {
         setStep('processing');
     } else {

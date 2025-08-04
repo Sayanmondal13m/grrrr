@@ -57,7 +57,7 @@ export default async function OrderPage() {
                  <Badge 
                     variant={
                         order.status === 'Completed' ? 'default' : 
-                        order.status === 'Processing' || order.status === 'Pending UTR' ? 'secondary' : 
+                        order.status === 'Processing' ? 'secondary' : 
                         'destructive'
                     }
                     className={cn(order.status === 'Completed' && 'bg-green-500/80 text-white')}
@@ -69,15 +69,6 @@ export default async function OrderPage() {
                 <div className="relative aspect-video w-full">
                     <Image src={order.productImageUrl} alt={order.productName} fill className="object-cover rounded-md" />
                 </div>
-                {order.status === 'Pending UTR' && (
-                     <Alert className="mt-4">
-                        <AlertCircle className="h-4 w-4" />
-                        <AlertTitle>Action Required</AlertTitle>
-                        <AlertDescription>
-                          Please submit the UTR for this order to complete the transaction. You may need to reopen the purchase flow for this item.
-                        </AlertDescription>
-                    </Alert>
-                )}
                  <Button asChild variant="outline" className="w-full mt-4">
                     <Link href="/refund-request">
                       <RotateCcw className="mr-2 h-4 w-4" />

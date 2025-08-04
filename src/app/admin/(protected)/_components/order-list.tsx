@@ -25,7 +25,7 @@ type ClientOrder = {
 
 interface OrderListProps {
     initialOrders: ClientOrder[];
-    status: ('Pending UTR' | 'Processing' | 'Completed' | 'Failed')[];
+    status: ('Processing' | 'Completed' | 'Failed')[];
     title: string;
     showActions?: boolean;
     initialHasMore: boolean;
@@ -88,6 +88,10 @@ export function OrderList({ initialOrders, status, title, showActions = false, i
             }
         });
     };
+    
+    const formatDate = (dateString: string) => {
+        return new Date(dateString).toLocaleString();
+    }
 
     return (
         <div className="space-y-6">
@@ -119,12 +123,12 @@ export function OrderList({ initialOrders, status, title, showActions = false, i
                                             <CardTitle className="text-base">{order.productName}</CardTitle>
                                             <Badge variant={
                                                 order.status === 'Completed' ? 'default' : 
-                                                order.status === 'Processing' || order.status === 'Pending UTR' ? 'secondary' : 
+                                                order.status === 'Processing' ? 'secondary' : 
                                                 'destructive'
                                             }>{order.status}</Badge>
                                         </div>
                                         <CardDescription>
-                                            Order Date: {order.createdAt}
+                                            Order Date: {formatDate(order.createdAt)}
                                         </CardDescription>
                                     </CardHeader>
                                     <CardContent>

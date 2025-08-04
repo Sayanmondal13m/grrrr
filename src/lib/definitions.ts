@@ -30,7 +30,7 @@ export interface Order {
     productPrice: number;
     productImageUrl: string;
     paymentMethod: 'UPI' | 'Redeem Code';
-    status: 'Pending UTR' | 'Processing' | 'Completed' | 'Failed';
+    status: 'Processing' | 'Completed' | 'Failed';
     utr?: string;
     redeemCode?: string;
     referralCode?: string;

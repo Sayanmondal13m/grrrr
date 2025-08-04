@@ -277,54 +277,6 @@ export async function generateReferralLink(): Promise<{ success: boolean; link?:
 
 // --- Order Actions ---
 
-const createOrderSchema = z.object({
-    gamingId: z.string().min(1, 'Gaming ID is required'),
-    productId: z.string(),
-    productName: z.string(),
-    productPrice: z.number(),
-    productImageUrl: z.string().url(),
-});
-
-export async function createUpiOrder(product: Product, gamingId: string): Promise<{ success: boolean; orderId?: string; message: string }> {
-    const validatedData = createOrderSchema.safeParse({
-        gamingId,
-        productId: product._id,
-        productName: product.name,
-        productPrice: product.price,
-        productImageUrl: product.imageUrl,
-    });
-
-    if (!validatedData.success) {
-        return { success: false, message: 'Invalid order data.' };
-    }
-
-    const userId = await ensureUserId();
-    const referralCode = cookies().get('referral_code')?.value;
-
-    const newOrder: Omit<Order, '_id'> = {
-        userId,
-        gamingId: validatedData.data.gamingId,
-        productId: validatedData.data.productId,
-        productName: validatedData.data.productName,
-        productPrice: validatedData.data.productPrice,
-        productImageUrl: validatedData.data.productImageUrl,
-        paymentMethod: 'UPI',
-        status: 'Pending UTR',
-        referralCode: referralCode,
-        createdAt: new Date(),
-    };
-
-    try {
-        const db = await connectToDatabase();
-        const result = await db.collection<Omit<Order, '_id'>>('orders').insertOne(newOrder);
-        return { success: true, orderId: result.insertedId.toString(), message: 'Order created.' };
-    } catch (error) {
-        console.error('Error creating UPI order:', error);
-        return { success: false, message: 'Failed to create order.' };
-    }
-}
-
-
 const redeemCodeSchema = z.object({
   gamingId: z.string().min(1, 'Gaming ID is required'),
   productId: z.string(),
@@ -364,6 +316,7 @@ export async function createRedeemCodeOrder(
     try {
         const db = await connectToDatabase();
         await db.collection('orders').insertOne(newOrder);
+        revalidatePath('/order');
         return { success: true, message: 'Order is processing.' };
     } catch (error) {
         console.error('Error creating redeem code order:', error);
@@ -372,30 +325,39 @@ export async function createRedeemCodeOrder(
 }
 
 const submitUtrSchema = z.object({
-    orderId: z.string(),
+    gamingId: z.string().min(1, 'Gaming ID is required'),
+    productId: z.string(),
     utr: z.string().min(6, 'UTR must be at least 6 characters'),
 });
 
-export async function submitUtr(orderId: string, utr: string): Promise<{ success: boolean; message: string }> {
-    const validatedData = submitUtrSchema.safeParse({ orderId, utr });
+export async function submitUtr(product: Product, gamingId: string, utr: string): Promise<{ success: boolean; message: string }> {
+    const validatedData = submitUtrSchema.safeParse({ gamingId, productId: product._id, utr });
     if (!validatedData.success) {
         return { success: false, message: 'Invalid UTR data.' };
     }
 
-    const { ObjectId } = await import('mongodb');
+    const userId = await ensureUserId();
+    const referralCode = cookies().get('referral_code')?.value;
+
+    const newOrder: Omit<Order, '_id'> = {
+        userId,
+        gamingId: validatedData.data.gamingId,
+        productId: product._id,
+        productName: product.name,
+        productPrice: product.price,
+        productImageUrl: product.imageUrl,
+        paymentMethod: 'UPI',
+        status: 'Processing',
+        utr: validatedData.data.utr,
+        referralCode: referralCode,
+        createdAt: new Date(),
+    };
 
     try {
         const db = await connectToDatabase();
-        const result = await db.collection('orders').updateOne(
-            { _id: new ObjectId(orderId) },
-            { $set: { utr: validatedData.data.utr, status: 'Processing' } }
-        );
-
-        if (result.modifiedCount === 0) {
-            return { success: false, message: 'Order not found or already updated.' };
-        }
-
-        return { success: true, message: 'UTR submitted successfully.' };
+        await db.collection('orders').insertOne(newOrder);
+        revalidatePath('/order');
+        return { success: true, message: 'UTR submitted successfully. Your order is now processing.' };
     } catch (error) {
         console.error('Error submitting UTR:', error);
         return { success: false, message: 'Failed to submit UTR.' };
@@ -493,7 +455,7 @@ export async function getOrdersForAdmin(
   page: number, 
   sort: string, 
   search: string, 
-  status: ('Pending UTR' | 'Processing' | 'Completed' | 'Failed')[]
+  status: ('Processing' | 'Completed' | 'Failed')[]
 ) {
   noStore();
   const db = await connectToDatabase();
@@ -518,7 +480,7 @@ export async function getOrdersForAdmin(
   const orders = ordersFromDb.map((order: any) => ({
     ...order,
     _id: order._id.toString(),
-    createdAt: order.createdAt.toLocaleString(),
+    createdAt: order.createdAt.toISOString(),
   }));
 
   return { orders, hasMore };
@@ -548,7 +510,7 @@ export async function getUsersForAdmin(page: number, sort: string, search: strin
   const users = usersFromDb.map((user: any) => ({
     ...user,
     _id: user._id.toString(),
-    createdAt: user.createdAt.toLocaleString(),
+    createdAt: user.createdAt.toISOString(),
   }));
 
 
@@ -576,7 +538,7 @@ export async function getWalletData(): Promise<{ walletBalance: number; withdraw
     const withdrawals = withdrawalsFromDb.map((w: any) => ({
         ...w,
         _id: w._id.toString(),
-        createdAt: w.createdAt.toLocaleString(),
+        createdAt: w.createdAt.toISOString(),
     }));
 
     return { walletBalance: user.walletBalance || 0, withdrawals };
@@ -669,7 +631,7 @@ export async function getWithdrawalsForAdmin(page: number, sort: string, status:
     const withdrawals = withdrawalsFromDb.map((w: any) => ({
         ...w,
         _id: w._id.toString(),
-        createdAt: w.createdAt.toLocaleString(),
+        createdAt: w.createdAt.toISOString(),
     }));
 
     return { withdrawals, hasMore };
@@ -682,6 +644,12 @@ export async function updateWithdrawalStatus(withdrawalId: string, status: 'Comp
     }
     const { ObjectId } = await import('mongodb');
     const db = await connectToDatabase();
+
+    // Find the withdrawal request to potentially refund if it fails
+    const withdrawal = await db.collection<Withdrawal>('withdrawals').findOne({ _id: new ObjectId(withdrawalId) });
+    if (!withdrawal) {
+        return { success: false, message: 'Withdrawal request not found.' };
+    }
 
     const result = await db.collection('withdrawals').updateOne(
         { _id: new ObjectId(withdrawalId) },
