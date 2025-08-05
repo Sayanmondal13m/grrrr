@@ -1,12 +1,12 @@
 'use client';
 
-import { getOrdersForUser } from '@/app/actions';
-import { Order } from '@/lib/definitions';
+import { getOrdersForUser, getUserData } from '@/app/actions';
+import { Order, User } from '@/lib/definitions';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import Image from 'next/image';
 import { cn } from '@/lib/utils';
-import { AlertCircle, RotateCcw } from 'lucide-react';
+import { AlertCircle, RotateCcw, Coins, Loader2 } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
@@ -41,22 +41,44 @@ const FormattedDate = ({ dateString }: { dateString: string }) => {
 
 export default function OrderPage() {
   const [orders, setOrders] = useState<Order[]>([]);
+  const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const fetchOrders = async () => {
+    const fetchInitialData = async () => {
       setIsLoading(true);
-      const userOrders = await getOrdersForUser();
-      setOrders(userOrders);
+      const userData = await getUserData();
+      setUser(userData);
+      if (userData) {
+        const userOrders = await getOrdersForUser();
+        setOrders(userOrders);
+      }
       setIsLoading(false);
     };
-    fetchOrders();
+    fetchInitialData();
   }, []);
 
   if (isLoading) {
     return (
-        <div className="container mx-auto px-4 py-16 text-center">
-            <p>Loading your orders...</p>
+        <div className="container mx-auto px-4 py-16 text-center flex justify-center items-center h-64">
+            <Loader2 className="w-8 h-8 animate-spin text-primary" />
+        </div>
+    )
+  }
+
+  if (!user) {
+    return (
+        <div className="container mx-auto px-4 py-16">
+            <Card className="max-w-2xl mx-auto text-center py-12">
+                <CardHeader>
+                    <AlertCircle className="h-12 w-12 mx-auto text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                    <h2 className="text-2xl font-semibold mb-2">No User Found</h2>
+                    <p className="text-muted-foreground mb-4">Please register your Gaming ID on the homepage to view your orders.</p>
+                    <Button asChild><Link href="/">Go to Homepage</Link></Button>
+                </CardContent>
+            </Card>
         </div>
     )
   }
@@ -109,16 +131,28 @@ export default function OrderPage() {
                 <div className="relative aspect-video w-full">
                     <Image src={order.productImageUrl} alt={order.productName} fill className="object-cover rounded-md" />
                 </div>
-                 <Button asChild variant="outline" className="w-full mt-4">
-                    <Link href="/refund-request">
-                      <RotateCcw className="mr-2 h-4 w-4" />
-                      Request a Refund
-                    </Link>
-                  </Button>
+                 <div className="mt-4 space-y-1 text-sm">
+                    <div className="flex justify-between">
+                        <span className="text-muted-foreground">Original Price:</span>
+                        <span className="font-medium">₹{order.productPrice}</span>
+                    </div>
+                    <div className="flex justify-between text-amber-600">
+                        <span className="font-medium flex items-center gap-1"><Coins className="w-4 h-4"/>Coins Used:</span>
+                        <span className="font-medium">- ₹{order.coinsUsed}</span>
+                    </div>
+                     <div className="flex justify-between font-bold text-base border-t pt-1 mt-1">
+                        <span>Final Price:</span>
+                        <span>₹{order.finalPrice}</span>
+                    </div>
+                 </div>
               </CardContent>
               <CardFooter className="bg-muted/40 p-4 text-sm text-muted-foreground flex justify-between items-center">
                 <span><FormattedDate dateString={order.createdAt as unknown as string} /></span>
-                <span className="font-bold text-foreground font-sans">₹{order.productPrice}</span>
+                 <Button asChild variant="link" className="p-0 h-auto">
+                    <Link href="/refund-request">
+                      Request a Refund
+                    </Link>
+                  </Button>
               </CardFooter>
             </Card>
           ))}

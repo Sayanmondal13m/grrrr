@@ -3,6 +3,7 @@
 import { cookies } from 'next/headers';
 import { randomBytes } from 'crypto';
 
+// This file is now deprecated in favor of the new user actions in `src/app/actions.ts`
 // --- User Identification ---
 export async function getUserId(): Promise<string | null> {
     const userIdCookie = cookies().get('user_id')?.value;

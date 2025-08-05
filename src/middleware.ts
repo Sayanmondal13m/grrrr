@@ -3,25 +3,15 @@ import { NextResponse, type NextRequest } from 'next/server';
 export async function middleware(request: NextRequest) {
   const response = NextResponse.next();
 
-  // Handle user ID
-  let userId = request.cookies.get('user_id')?.value;
-  if (!userId) {
-    const randomValues = new Uint8Array(16);
-    crypto.getRandomValues(randomValues);
-    const newUserId = Array.from(randomValues).map(b => b.toString(16).padStart(2, '0')).join('');
-    response.cookies.set('user_id', newUserId, {
-      maxAge: 365 * 24 * 60 * 60, // 1 year
-      path: '/',
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-    });
-  }
-
   // Handle referral codes
   const referralCode = request.nextUrl.searchParams.get('ref');
-  if (referralCode) {
+  const existingReferralCode = request.cookies.get('referral_code')?.value;
+
+  // Only set the referral code if it's not already set
+  // This ensures the first referrer gets credit
+  if (referralCode && !existingReferralCode) {
     response.cookies.set('referral_code', referralCode, {
-      maxAge: 7 * 24 * 60 * 60, // 1 week
+      maxAge: 365 * 24 * 60 * 60, // 1 year, to persist across sessions
       path: '/',
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',

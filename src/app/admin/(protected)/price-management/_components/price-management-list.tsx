@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
-import { Loader2, Trash2 } from 'lucide-react';
+import { Loader2, Trash2, Coins } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { updateProduct, vanishProduct } from '@/app/actions';
 import type { Product } from '@/lib/definitions';
@@ -26,7 +26,7 @@ export default function PriceManagementList({ initialProducts }: PriceManagement
       const result = await updateProduct(productId, formData);
       if (result.success) {
         toast({ title: 'Success', description: 'Product updated successfully.' });
-        setProducts(products.map(p => p._id === productId ? { ...p, ...Object.fromEntries(formData.entries()), price: parseFloat(formData.get('price') as string), quantity: parseInt(formData.get('quantity') as string) } : p));
+        // No need to manually update state as revalidatePath will trigger a refresh
       } else {
         toast({ variant: 'destructive', title: 'Error', description: result.message });
       }
@@ -50,14 +50,14 @@ export default function PriceManagementList({ initialProducts }: PriceManagement
       <CardHeader>
         <CardTitle>Price & Product Management</CardTitle>
         <CardDescription>
-          Update product details, availability, and visibility. Changes will be reflected on the homepage immediately.
+          Update product details, availability, and coin discounts. Changes will be reflected on the homepage immediately.
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
         {products.map((product) => (
           <form key={product._id} action={(formData) => handleUpdate(product._id, formData)}>
             <Card>
-              <CardContent className="p-6 grid grid-cols-1 md:grid-cols-4 gap-6">
+              <CardContent className="p-6 grid grid-cols-1 md:grid-cols-5 gap-6">
                 <div className="space-y-2 md:col-span-2">
                   <Label htmlFor={`name-${product._id}`}>Product Name</Label>
                   <Input
@@ -67,13 +67,23 @@ export default function PriceManagementList({ initialProducts }: PriceManagement
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor={`price-${product._id}`}>Price ($)</Label>
+                  <Label htmlFor={`price-${product._id}`}>Price (₹)</Label>
                   <Input
                     id={`price-${product._id}`}
                     name="price"
                     type="number"
                     step="0.01"
                     defaultValue={product.price}
+                  />
+                </div>
+                 <div className="space-y-2">
+                  <Label htmlFor={`coins-${product._id}`} className="flex items-center gap-1"><Coins className="w-4 h-4 text-amber-500" /> Applicable Coins</Label>
+                  <Input
+                    id={`coins-${product._id}`}
+                    name="coinsApplicable"
+                    type="number"
+                    step="1"
+                    defaultValue={product.coinsApplicable}
                   />
                 </div>
                 <div className="space-y-2">
@@ -86,7 +96,7 @@ export default function PriceManagementList({ initialProducts }: PriceManagement
                     defaultValue={product.quantity}
                   />
                 </div>
-                <div className="flex items-end justify-between md:col-start-4">
+                <div className="flex items-end justify-between md:col-start-5">
                     <div className="space-y-2">
                         <Label htmlFor={`isAvailable-${product._id}`}>Available</Label>
                         <div className="flex items-center h-10">
@@ -103,14 +113,14 @@ export default function PriceManagementList({ initialProducts }: PriceManagement
                  <AlertDialog>
                     <AlertDialogTrigger asChild>
                         <Button variant="destructive" type="button" disabled={isPending}>
-                            <Trash2 className="mr-2" /> Vanish
+                            <Trash2 className="mr-2 h-4 w-4" /> Vanish
                         </Button>
                     </AlertDialogTrigger>
                     <AlertDialogContent>
                         <AlertDialogHeader>
                         <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
                         <AlertDialogDescription>
-                            This action will permanently hide this product from the storefront. It cannot be undone.
+                            This will hide the product from the storefront. You can restore it from the "Vanished Products" page.
                         </AlertDialogDescription>
                         </AlertDialogHeader>
                         <AlertDialogFooter>
@@ -122,7 +132,7 @@ export default function PriceManagementList({ initialProducts }: PriceManagement
                     </AlertDialogContent>
                 </AlertDialog>
                 <Button type="submit" disabled={isPending}>
-                  {isPending ? <Loader2 className="animate-spin" /> : 'Save Changes'}
+                  {isPending ? <Loader2 className="animate-spin mr-2" /> : null} Save Changes
                 </Button>
               </CardFooter>
             </Card>

@@ -1,4 +1,3 @@
-
 import AccountList from './_components/account-list';
 import { getUsersForAdmin } from '@/app/actions';
 
@@ -15,7 +14,7 @@ export default async function AdminAccountsPage({
 
   return (
     <AccountList
-      initialUsers={users}
+      initialUsers={JSON.parse(JSON.stringify(users))}
       initialHasMore={hasMore}
     />
   );

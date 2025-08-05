@@ -11,15 +11,34 @@ import {
 } from '@/components/ui/card';
 import { useState } from 'react';
 import PurchaseModal from './purchase-modal';
-import type { Product } from '@/lib/definitions';
-import { Ban } from 'lucide-react';
+import type { Product, User } from '@/lib/definitions';
+import { Ban, Coins } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
+
 
 interface ProductCardProps {
   product: Product;
+  user: User | null;
 }
 
-export default function ProductCard({ product }: ProductCardProps) {
+export default function ProductCard({ product, user }: ProductCardProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const { toast } = useToast();
+
+  const finalPrice = product.price - product.coinsApplicable;
+
+  const handleBuyClick = () => {
+    if (!user) {
+        toast({
+            variant: 'destructive',
+            title: 'Please Register',
+            description: 'You need to enter your Gaming ID to make a purchase.',
+        });
+        // This relies on a global modal system or state, which is complex.
+        // A simpler approach is to let the user see the modal and handle it there.
+    }
+    setIsModalOpen(true);
+  }
 
   return (
     <>
@@ -30,18 +49,21 @@ export default function ProductCard({ product }: ProductCardProps) {
           </div>
         </CardHeader>
         <CardContent className="flex-grow p-4">
-          <div className="text-sm font-bold text-primary mb-1">
-            Quantity: {product.quantity}
-          </div>
           <CardTitle className="text-lg font-headline font-semibold">{product.name}</CardTitle>
+          {product.coinsApplicable > 0 && (
+            <div className="text-xs text-amber-600 font-semibold mt-1 flex items-center gap-1">
+              <Coins className="w-3 h-3" />
+              Use {product.coinsApplicable} Coins & Get it for ₹{finalPrice}
+            </div>
+          )}
         </CardContent>
         <CardFooter className="p-4 pt-0">
           {product.isAvailable ? (
             <Button 
               className="w-full bg-accent hover:bg-accent/90 text-accent-foreground font-bold text-base transition-transform duration-200 hover:scale-105 font-sans"
-              onClick={() => setIsModalOpen(true)}
+              onClick={handleBuyClick}
             >
-              Buy ₹{product.price}
+              Buy <span className="line-through ml-2 text-accent-foreground/80">₹{product.price}</span> <span className="ml-1">₹{finalPrice}</span>
             </Button>
           ) : (
             <Button 
@@ -55,7 +77,7 @@ export default function ProductCard({ product }: ProductCardProps) {
           )}
         </CardFooter>
       </Card>
-      {isModalOpen && <PurchaseModal product={product} onClose={() => setIsModalOpen(false)} />}
+      {isModalOpen && <PurchaseModal product={product} user={user} onClose={() => setIsModalOpen(false)} />}
     </>
   );
 }

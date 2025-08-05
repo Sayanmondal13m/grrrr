@@ -5,15 +5,15 @@ import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
-import { ArrowUpDown, Loader2, Search, Trash2 } from 'lucide-react';
+import { ArrowUpDown, Loader2, Search, Trash2, Coins } from 'lucide-react';
 import { deleteUser, getUsersForAdmin } from '@/app/actions';
 import { useToast } from '@/hooks/use-toast';
 import { Input } from '@/components/ui/input';
 
 type ClientUser = {
   _id: string;
-  username: string;
-  password:  string;
+  gamingId: string;
+  coins: number;
   referralCode?: string;
   referredBy?: string;
   createdAt: string;
@@ -22,6 +22,14 @@ type ClientUser = {
 interface AccountListProps {
     initialUsers: ClientUser[];
     initialHasMore: boolean;
+}
+
+const FormattedDate = ({ dateString }: { dateString: string }) => {
+    const [mounted, setMounted] = useState(false);
+    useEffect(() => setMounted(true), []);
+    if (!mounted) return null;
+    const date = new Date(dateString);
+    return `${date.toLocaleDateString()} ${date.toLocaleTimeString()}`;
 }
 
 export default function AccountList({ initialUsers, initialHasMore }: AccountListProps) {
@@ -77,7 +85,7 @@ export default function AccountList({ initialUsers, initialHasMore }: AccountLis
                 setUsers(prev => prev.filter(user => user._id.toString() !== userId));
                 toast({ title: 'Success', description: 'User account deleted.' });
             } else {
-                toast({ variant: 'destructive', title: 'Error', description: 'Failed to delete user.' });
+                toast({ variant: 'destructive', title: 'Error', description: result.message });
             }
         });
     };
@@ -90,7 +98,7 @@ export default function AccountList({ initialUsers, initialHasMore }: AccountLis
                         <CardTitle>User Accounts</CardTitle>
                         <div className="flex items-center gap-2">
                              <form onSubmit={handleSearch} className="flex items-center gap-2">
-                                <Input name="search" placeholder="Search by referral code..." defaultValue={searchParams.get('search') || ''} className="w-48"/>
+                                <Input name="search" placeholder="Search by Gaming ID..." defaultValue={searchParams.get('search') || ''} className="w-48"/>
                                 <Button type="submit" variant="outline" size="icon"><Search className="h-4 w-4" /></Button>
                             </form>
                             <Button variant="outline" onClick={handleSortToggle}>
@@ -108,14 +116,14 @@ export default function AccountList({ initialUsers, initialHasMore }: AccountLis
                             {users.map(user => (
                                 <Card key={user._id}>
                                     <CardHeader>
-                                        <CardTitle className="text-base">{user.username}</CardTitle>
+                                        <CardTitle className="text-base">{user.gamingId}</CardTitle>
                                         <CardDescription>
-                                            Created: {user.createdAt}
+                                            Created: <FormattedDate dateString={user.createdAt} />
                                         </CardDescription>
                                     </CardHeader>
                                     <CardContent>
                                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
-                                            <p className="truncate"><strong>Password Hash:</strong> {user.password}</p>
+                                            <p className="flex items-center gap-2 font-semibold"><Coins className="w-4 h-4 text-amber-500" />{user.coins} Coins</p>
                                             <p><strong>Referral Code:</strong> {user.referralCode || 'N/A'}</p>
                                             <p><strong>Referred By:</strong> {user.referredBy || 'N/A'}</p>
                                         </div>

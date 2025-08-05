@@ -1,17 +1,16 @@
-
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import type { Product } from '@/lib/definitions';
-import { Loader2, X, ShieldCheck, Smartphone, Globe } from 'lucide-react';
+import type { Product, User } from '@/lib/definitions';
+import { Loader2, X, ShieldCheck, Smartphone, Globe, Coins } from 'lucide-react';
 import Image from 'next/image';
-import { createRedeemCodeOrder, submitUtr } from '@/app/actions';
+import { createRedeemCodeOrder, submitUtr, registerGamingId as registerAction } from '@/app/actions';
 import QrCode from 'react-qr-code';
 import {
   Select,
@@ -24,17 +23,19 @@ import Link from 'next/link';
 
 interface PurchaseModalProps {
   product: Product;
+  user: User | null;
   onClose: () => void;
 }
 
-type ModalStep = 'details' | 'payment' | 'redeem' | 'utr' | 'processing';
+type ModalStep = 'register' | 'details' | 'payment' | 'redeem' | 'utr' | 'processing';
 
 const upiId = "9907703991-1@okbizaxis";
 
-export default function PurchaseModal({ product, onClose }: PurchaseModalProps) {
+export default function PurchaseModal({ product, user: initialUser, onClose }: PurchaseModalProps) {
   const [isOpen, setIsOpen] = useState(true);
-  const [step, setStep] = useState<ModalStep>('details');
-  const [gamingId, setGamingId] = useState('');
+  const [user, setUser] = useState<User | null>(initialUser);
+  const [step, setStep] = useState<ModalStep>(initialUser ? 'details' : 'register');
+  const [gamingId, setGamingId] = useState(initialUser?.gamingId || '');
   const [redeemCode, setRedeemCode] = useState('');
   const [utr, setUtr] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -52,7 +53,6 @@ export default function PurchaseModal({ product, onClose }: PurchaseModalProps) 
     router.push('/order');
   };
 
-  // Timer for QR code validity and UTR popup
   useEffect(() => {
     if (step === 'payment') {
         const timer = setInterval(() => {
@@ -72,30 +72,42 @@ export default function PurchaseModal({ product, onClose }: PurchaseModalProps) 
     }
   }, [step]);
 
-
-  const handleBuyWithUpi = async () => {
+  const handleRegister = async () => {
     if (!gamingId) {
       toast({ variant: 'destructive', title: 'Error', description: 'Please enter your Gaming ID.' });
       return;
     }
+    setIsLoading(true);
+    const result = await registerAction(gamingId);
+    if (result.success && result.user) {
+        toast({ title: 'Success', description: result.message });
+        setUser(result.user as User);
+        setStep('details');
+    } else {
+        toast({ variant: 'destructive', title: 'Error', description: result.message });
+    }
+    setIsLoading(false);
+  };
+
+  const handleBuyWithUpi = async () => {
     setStep('payment');
   };
 
   const handleBuyWithRedeemCode = async () => {
-     if (!gamingId) {
-      toast({ variant: 'destructive', title: 'Error', description: 'Please enter your Gaming ID.' });
-      return;
-    }
     setStep('redeem');
   };
 
   const handleRedeemSubmit = async () => {
+    if (!user) {
+        toast({ variant: 'destructive', title: 'Error', description: 'User not found.' });
+        return;
+    }
     if (!redeemCode) {
         toast({ variant: 'destructive', title: 'Error', description: 'Please enter your redeem code.' });
         return;
     }
     setIsLoading(true);
-    const result = await createRedeemCodeOrder(product, gamingId, redeemCode);
+    const result = await createRedeemCodeOrder(product, user.gamingId, redeemCode, user);
     if (result.success) {
         setStep('processing');
     } else {
@@ -105,12 +117,16 @@ export default function PurchaseModal({ product, onClose }: PurchaseModalProps) 
   }
 
   const handleUtrSubmit = async () => {
+    if (!user) {
+        toast({ variant: 'destructive', title: 'Error', description: 'User not found.' });
+        return;
+    }
     if (!utr) {
         toast({ variant: 'destructive', title: 'Error', description: 'Please enter the UTR.' });
         return;
     }
     setIsLoading(true);
-    const result = await submitUtr(product, gamingId, utr);
+    const result = await submitUtr(product, user.gamingId, utr, user);
     if (result.success) {
         setStep('processing');
     } else {
@@ -118,6 +134,9 @@ export default function PurchaseModal({ product, onClose }: PurchaseModalProps) 
     }
     setIsLoading(false);
   }
+  
+  const coinsToUse = user ? Math.min(user.coins, product.coinsApplicable) : 0;
+  const finalPrice = product.price - coinsToUse;
 
   const upiLink = (app: 'gpay' | 'paytm' | 'phonepe') => {
     const base = {
@@ -128,7 +147,7 @@ export default function PurchaseModal({ product, onClose }: PurchaseModalProps) 
     const params = new URLSearchParams({
         pa: upiId,
         pn: 'Garena',
-        am: product.price.toString(),
+        am: finalPrice.toString(),
         cu: 'INR',
         tn: `Order for ${product.name}`,
     });
@@ -137,13 +156,32 @@ export default function PurchaseModal({ product, onClose }: PurchaseModalProps) 
 
   const renderContent = () => {
     switch (step) {
+      case 'register':
+        return (
+             <>
+                <DialogHeader>
+                    <DialogTitle className="text-2xl font-headline">Welcome to Garena Gears</DialogTitle>
+                    <DialogDescription>Please enter your Gaming ID to continue.</DialogDescription>
+                </DialogHeader>
+                <div className="space-y-4 pt-4">
+                    <div className="space-y-2">
+                        <Label htmlFor="gaming-id-register">Gaming ID</Label>
+                        <Input id="gaming-id-register" placeholder="Your in-game user ID" value={gamingId} onChange={e => setGamingId(e.target.value)} />
+                    </div>
+                    <Button onClick={handleRegister} className="w-full" disabled={isLoading}>
+                        {isLoading ? <Loader2 className="animate-spin" /> : 'Register & Continue'}
+                    </Button>
+                </div>
+            </>
+        )
       case 'details':
+        if (!user) return null; // Should not happen if step is 'details'
         return (
           <>
             <DialogHeader>
                 <div className="flex items-center gap-2 mb-4">
                     <Image src="/img/garena.png" alt="Garena Logo" width={28} height={28} />
-                    <DialogTitle className="text-2xl font-headline">Garena</DialogTitle>
+                    <DialogTitle className="text-2xl font-headline">Confirm Purchase</DialogTitle>
                 </div>
             </DialogHeader>
             <div className="space-y-6">
@@ -153,7 +191,9 @@ export default function PurchaseModal({ product, onClose }: PurchaseModalProps) 
                     </div>
                     <div>
                         <h3 className="font-semibold">{product.name}</h3>
-                        <p className="text-2xl font-bold text-primary font-sans">₹{product.price}</p>
+                        <p className="text-sm text-muted-foreground line-through">Original Price: ₹{product.price}</p>
+                        <p className="text-sm text-amber-600 flex items-center gap-1"><Coins className="w-4 h-4"/> Coins Applied: -₹{coinsToUse}</p>
+                        <p className="text-2xl font-bold text-primary font-sans">Final Price: ₹{finalPrice}</p>
                     </div>
                 </div>
                  <div className="space-y-2">
@@ -181,25 +221,21 @@ export default function PurchaseModal({ product, onClose }: PurchaseModalProps) 
                   </Select>
                 </div>
                 <div className="space-y-2">
-                    <Label htmlFor="gaming-id">Enter your Gaming ID</Label>
-                    <Input id="gaming-id" placeholder="Your in-game ID" value={gamingId} onChange={e => setGamingId(e.target.value)} />
+                    <Label htmlFor="gaming-id">Gaming ID</Label>
+                    <Input id="gaming-id" value={user.gamingId} readOnly disabled />
                 </div>
                 <div className="space-y-2">
                    <Button onClick={handleBuyWithUpi} className="w-full font-sans" disabled={isLoading}>
-                    {isLoading ? <Loader2 className="animate-spin" /> : `Buy ₹${product.price}`}
+                    {isLoading ? <Loader2 className="animate-spin" /> : `Pay ₹${finalPrice} via UPI`}
                     </Button>
                     <Button onClick={handleBuyWithRedeemCode} className="w-full font-sans" variant="secondary" disabled={isLoading}>
-                    {isLoading ? <Loader2 className="animate-spin" /> : `Buy ₹${product.price} with Redeem Code`}
+                    {isLoading ? <Loader2 className="animate-spin" /> : `Use Redeem Code`}
                     </Button>
                 </div>
                 <p className="text-xs text-muted-foreground text-center mt-2">
                     By continuing, you accept our{' '}
                     <Link href="/terms" className="underline hover:text-primary" onClick={handleClose}>
                         Terms & Conditions
-                    </Link>{' '}
-                    and{' '}
-                    <Link href="/privacy" className="underline hover:text-primary" onClick={handleClose}>
-                        Privacy Policy
                     </Link>
                     .
                 </p>
@@ -217,7 +253,7 @@ export default function PurchaseModal({ product, onClose }: PurchaseModalProps) 
                         <QrCode value={upiLink('gpay')} size={160} />
                     </div>
                     <div className="text-center">
-                        <p className="font-semibold">Scan to pay with any UPI app</p>
+                        <p className="font-semibold">Scan to pay ₹{finalPrice}</p>
                         <p className="text-sm text-muted-foreground">Expires in: {Math.floor(timeLeft / 60)}:{(timeLeft % 60).toString().padStart(2, '0')}</p>
                     </div>
                     
@@ -260,7 +296,7 @@ export default function PurchaseModal({ product, onClose }: PurchaseModalProps) 
                         <Input id="redeem-code" placeholder="XXXX-XXXX-XXXX" value={redeemCode} onChange={e => setRedeemCode(e.target.value)} />
                     </div>
                     <Button onClick={handleRedeemSubmit} className="w-full" disabled={isLoading}>
-                        {isLoading ? <Loader2 className="animate-spin" /> : `Submit Code & Buy ($${product.price})`}
+                        {isLoading ? <Loader2 className="animate-spin" /> : `Submit Code & Buy`}
                     </Button>
                     <Button variant="link" onClick={() => setStep('details')}>Back</Button>
                 </div>

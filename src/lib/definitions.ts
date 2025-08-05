@@ -1,14 +1,25 @@
 import { type ObjectId } from 'mongodb';
 
+// This interface is being replaced by the new User interface below.
+// export interface User {
+//   _id: ObjectId;
+//   username: string;
+//   password:  string;
+//   referralCode?: string;
+//   referredBy?: string;
+//   walletBalance?: number;
+//   createdAt: Date;
+// }
+
 export interface User {
-  _id: ObjectId;
-  username: string;
-  password:  string;
-  referralCode?: string;
-  referredBy?: string;
-  walletBalance?: number;
-  createdAt: Date;
+    _id: ObjectId;
+    gamingId: string;
+    coins: number;
+    referralCode?: string;
+    referredBy?: string;
+    createdAt: Date;
 }
+
 
 export interface Product {
     _id: string; // From MongoDB
@@ -19,11 +30,12 @@ export interface Product {
     dataAiHint: string;
     isAvailable: boolean;
     isVanished: boolean;
+    coinsApplicable: number;
 }
 
 export interface Order {
     _id: ObjectId;
-    userId: string; // The unique ID assigned to the user/browser session
+    userId: string; // The unique ID of the user document
     gamingId: string;
     productId: string;
     productName: string;
@@ -34,6 +46,8 @@ export interface Order {
     utr?: string;
     redeemCode?: string;
     referralCode?: string;
+    coinsUsed: number;
+    finalPrice: number;
     createdAt: Date;
 }
 
