@@ -66,23 +66,6 @@ export default function OrderPage() {
     )
   }
 
-  if (!user) {
-    return (
-        <div className="container mx-auto px-4 py-16">
-            <Card className="max-w-2xl mx-auto text-center py-12">
-                <CardHeader>
-                    <AlertCircle className="h-12 w-12 mx-auto text-muted-foreground" />
-                </CardHeader>
-                <CardContent>
-                    <h2 className="text-2xl font-semibold mb-2">No User Found</h2>
-                    <p className="text-muted-foreground mb-4">Please register your Gaming ID on the homepage to view your orders.</p>
-                    <Button asChild><Link href="/">Go to Homepage</Link></Button>
-                </CardContent>
-            </Card>
-        </div>
-    )
-  }
-
   return (
     <div className="container mx-auto px-4 py-16">
       <div className="flex justify-between items-center mb-8">
@@ -97,7 +80,18 @@ export default function OrderPage() {
         </Button>
       </div>
 
-      {orders.length === 0 ? (
+      {!user ? (
+        <Card className="max-w-2xl mx-auto text-center py-12">
+            <CardHeader>
+                <AlertCircle className="h-12 w-12 mx-auto text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+                <h2 className="text-2xl font-semibold mb-2">No User Found</h2>
+                <p className="text-muted-foreground mb-4">Please register your Gaming ID on the homepage to view your orders.</p>
+                <Button asChild><Link href="/">Go to Homepage</Link></Button>
+            </CardContent>
+        </Card>
+      ) : orders.length === 0 ? (
         <Card className="max-w-2xl mx-auto text-center py-12">
            <CardHeader>
             <AlertCircle className="h-12 w-12 mx-auto text-muted-foreground" />

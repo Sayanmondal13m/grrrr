@@ -29,13 +29,13 @@ function SubmitButton() {
 
 export default function CoinSystem({ user }: CoinSystemProps) {
   const [isTransferOpen, setIsTransferOpen] = useState(false);
-  const [isRegisterModalOpen, setIsRegisterModalOpen] = useState(!user);
+  const [isRegisterModalOpen, setIsRegisterModalOpen] = useState(false);
   const { toast } = useToast();
   
   // Effect to open the modal if the user is not logged in when component mounts.
   useEffect(() => {
     if (!user) {
-      setIsRegisterModalOpen(true);
+      // setIsRegisterModalOpen(true); // Don't open automatically, wait for click
     } else {
       setIsRegisterModalOpen(false);
     }
@@ -72,12 +72,11 @@ export default function CoinSystem({ user }: CoinSystemProps) {
             <Link 
               href={user ? "/watch-ad" : "#"} 
               onClick={handleUnregisteredClick} 
-              target={user ? "_blank" : "_self"} 
-              className="flex-1 max-w-[180px]"
+              className="flex-1 max-w-[150px]"
             >
               <Card className="hover:bg-primary/5 transition-colors">
-                <CardContent className="p-3 flex flex-col items-center justify-center text-center">
-                    <Tv className="w-6 h-6 mx-auto text-primary" />
+                <CardContent className="p-2 flex flex-col items-center justify-center text-center">
+                    <Tv className="w-5 h-5 mx-auto text-primary" />
                     <p className="font-semibold mt-1 text-xs">Watch Ad</p>
                     <p className="text-xs text-muted-foreground">(+5 Coins)</p>
                 </CardContent>
@@ -86,10 +85,10 @@ export default function CoinSystem({ user }: CoinSystemProps) {
             
             <Dialog open={isTransferOpen} onOpenChange={setIsTransferOpen}>
               <DialogTrigger asChild>
-                  <div onClick={handleUnregisteredClick} className="flex-1 max-w-[180px] cursor-pointer">
+                  <div onClick={handleUnregisteredClick} className="flex-1 max-w-[150px] cursor-pointer">
                       <Card className="hover:bg-primary/5 transition-colors">
-                        <CardContent className="p-3 flex flex-col items-center justify-center text-center">
-                            <Coins className="w-6 h-6 mx-auto text-amber-500" />
+                        <CardContent className="p-2 flex flex-col items-center justify-center text-center">
+                            <Coins className="w-5 h-5 mx-auto text-amber-500" />
                             <p className="font-semibold mt-1 text-xs"> {user ? `${user.coins} Coins` : "Your Wallet"}</p>
                             <p className="text-xs text-muted-foreground">Click to transfer</p>
                         </CardContent>
@@ -128,5 +127,3 @@ export default function CoinSystem({ user }: CoinSystemProps) {
     </>
   );
 }
-
-    
