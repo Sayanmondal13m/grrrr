@@ -675,7 +675,10 @@ export async function getUsersForAdmin(page: number, sort: string, search: strin
 
   let query: any = {};
   if (search) {
-    query.gamingId = { $regex: search, $options: 'i' };
+    query.$or = [
+        { gamingId: { $regex: search, $options: 'i' } },
+        { referralCode: { $regex: search, $options: 'i' } }
+    ]
   }
   
   const usersFromDb = await db.collection<User>('users')

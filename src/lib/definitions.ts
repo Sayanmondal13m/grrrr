@@ -1,6 +1,8 @@
 import { type ObjectId } from 'mongodb';
 
-// This interface is being replaced by the new User interface below.
+// Represents a user account created via username/password on the /account page.
+// This is primarily for the referral and wallet system.
+// This is stored in the 'legacy_users' collection.
 // export interface User {
 //   _id: ObjectId;
 //   username: string;
@@ -11,6 +13,9 @@ import { type ObjectId } from 'mongodb';
 //   createdAt: Date;
 // }
 
+// Represents a gaming profile, created when a user first enters their Gaming ID.
+// This is used for purchasing items and the coin system.
+// This is stored in the 'users' collection.
 export interface User {
     _id: ObjectId;
     gamingId: string;
