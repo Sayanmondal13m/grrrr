@@ -1,26 +1,25 @@
 import { type ObjectId } from 'mongodb';
 
 // Represents a user account created via username/password on the /account page.
-// This is primarily for the referral and wallet system.
+// This is the account that has a wallet and can generate referral codes.
 // This is stored in the 'legacy_users' collection.
-// export interface User {
-//   _id: ObjectId;
-//   username: string;
-//   password:  string;
-//   referralCode?: string;
-//   referredBy?: string;
-//   walletBalance?: number;
-//   createdAt: Date;
-// }
+export interface LegacyUser {
+  _id: ObjectId;
+  username: string;
+  password:  string;
+  referralCode?: string;
+  referredBy?: string;
+  walletBalance?: number;
+  createdAt: Date;
+}
 
 // Represents a gaming profile, created when a user first enters their Gaming ID.
-// This is used for purchasing items and the coin system.
+// This is used for making purchases and tracking coins. It is NOT a full user account.
 // This is stored in the 'users' collection.
 export interface User {
     _id: ObjectId;
     gamingId: string;
     coins: number;
-    referralCode?: string;
     referredByCode?: string; // This will store the referral code of the referrer
     createdAt: Date;
 }
@@ -40,7 +39,7 @@ export interface Product {
 
 export interface Order {
     _id: ObjectId;
-    userId: string; // The unique ID of the user document
+    userId: string; // The unique ID of the Gaming ID profile document from 'users'
     gamingId: string;
     productId: string;
     productName: string;

@@ -12,7 +12,7 @@ const navItems = [
   { href: '/admin', label: 'Pending Orders', icon: Home },
   { href: '/admin/success', label: 'Successful Orders', icon: ListChecks },
   { href: '/admin/failed', label: 'Failed Orders', icon: ListX },
-  { href: '/admin/accounts', label: 'User Accounts', icon: Users },
+  { href: '/admin/accounts', label: 'Registered Accounts', icon: Users },
   { href: '/admin/withdrawals', label: 'Withdrawals', icon: Banknote },
   { href: '/admin/price-management', label: 'Price Management', icon: Tag },
   { href: '/admin/vanished-products', label: 'Vanished Products', icon: ArchiveRestore },

@@ -1,5 +1,5 @@
 import AccountList from './_components/account-list';
-import { getUsersForAdmin } from '@/app/actions';
+import { getLegacyUsersForAdmin } from '@/app/actions';
 
 export default async function AdminAccountsPage({
   searchParams,
@@ -10,7 +10,7 @@ export default async function AdminAccountsPage({
   const sort = typeof searchParams.sort === 'string' ? searchParams.sort : 'asc';
   const search = typeof searchParams.search === 'string' ? searchParams.search : '';
 
-  const { users, hasMore } = await getUsersForAdmin(page, sort, search);
+  const { users, hasMore } = await getLegacyUsersForAdmin(page, sort, search);
 
   return (
     <AccountList

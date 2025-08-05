@@ -6,7 +6,7 @@ import bcrypt from 'bcryptjs';
 import { SignJWT, jwtVerify } from 'jose';
 import { cookies } from 'next/headers';
 import { z } from 'zod';
-import { type User, type Order, type Product, type Withdrawal } from '@/lib/definitions';
+import { type User, type Order, type Product, type Withdrawal, type LegacyUser } from '@/lib/definitions';
 import { randomBytes } from 'crypto';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
@@ -298,7 +298,6 @@ export async function registerGamingId(gamingId: string): Promise<{ success: boo
       gamingId,
       coins: 800,
       createdAt: new Date(),
-      referralCode: randomBytes(4).toString('hex'),
       referredByCode: referralCode, // Store the referral code
     };
 
@@ -309,12 +308,12 @@ export async function registerGamingId(gamingId: string): Promise<{ success: boo
     const createdUser = { ...newUser, _id: result.insertedId };
     
     if (referralCode) {
-        // No coin reward on signup, reward on purchase
         cookies().delete('referral_code');
     }
 
     revalidatePath('/');
-    return { success: true, message: 'Registration successful! You have been awarded 800 coins.', user: JSON.parse(JSON.stringify(createdUser)) };
+    const plainUser = JSON.parse(JSON.stringify(createdUser));
+    return { success: true, message: 'Registration successful! You have been awarded 800 coins.', user: plainUser };
   } catch (error) {
     console.error('Error registering Gaming ID:', error);
     return { success: false, message: 'An error occurred during registration.' };
@@ -624,7 +623,7 @@ export async function deleteUser(userId: string): Promise<{success: boolean; mes
     }
     const { ObjectId } = await import('mongodb');
     const db = await connectToDatabase();
-    await db.collection('users').deleteOne({ _id: new ObjectId(userId) });
+    await db.collection('legacy_users').deleteOne({ _id: new ObjectId(userId) });
     revalidatePath('/admin/accounts');
     return { success: true, message: 'User deleted.' };
 }
@@ -668,7 +667,7 @@ export async function getOrdersForAdmin(
   return { orders, hasMore };
 }
 
-export async function getUsersForAdmin(page: number, sort: string, search: string) {
+export async function getLegacyUsersForAdmin(page: number, sort: string, search: string) {
   noStore();
   const db = await connectToDatabase();
   const skip = (page - 1) * PAGE_SIZE;
@@ -676,19 +675,19 @@ export async function getUsersForAdmin(page: number, sort: string, search: strin
   let query: any = {};
   if (search) {
     query.$or = [
-        { gamingId: { $regex: search, $options: 'i' } },
+        { username: { $regex: search, $options: 'i' } },
         { referralCode: { $regex: search, $options: 'i' } }
     ]
   }
   
-  const usersFromDb = await db.collection<User>('users')
+  const usersFromDb = await db.collection<LegacyUser>('legacy_users')
     .find(query)
     .sort({ createdAt: sort === 'asc' ? 1 : -1 })
     .skip(skip)
     .limit(PAGE_SIZE)
     .toArray();
 
-  const totalUsers = await db.collection('users').countDocuments(query);
+  const totalUsers = await db.collection('legacy_users').countDocuments(query);
   const hasMore = skip + usersFromDb.length < totalUsers;
 
   const users = usersFromDb.map((user: any) => ({

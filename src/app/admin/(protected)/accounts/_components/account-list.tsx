@@ -5,22 +5,14 @@ import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
-import { ArrowUpDown, Loader2, Search, Trash2, Coins } from 'lucide-react';
-import { deleteUser, getUsersForAdmin } from '@/app/actions';
+import { ArrowUpDown, Loader2, Search, Trash2, Wallet } from 'lucide-react';
+import { deleteUser, getLegacyUsersForAdmin } from '@/app/actions';
 import { useToast } from '@/hooks/use-toast';
 import { Input } from '@/components/ui/input';
-
-type ClientUser = {
-  _id: string;
-  gamingId: string;
-  coins: number;
-  referralCode?: string;
-  referredBy?: string;
-  createdAt: string;
-}
+import { type LegacyUser } from '@/lib/definitions';
 
 interface AccountListProps {
-    initialUsers: ClientUser[];
+    initialUsers: LegacyUser[];
     initialHasMore: boolean;
 }
 
@@ -33,7 +25,7 @@ const FormattedDate = ({ dateString }: { dateString: string }) => {
 }
 
 export default function AccountList({ initialUsers, initialHasMore }: AccountListProps) {
-    const [users, setUsers] = useState<ClientUser[]>(initialUsers);
+    const [users, setUsers] = useState<LegacyUser[]>(initialUsers);
     const [page, setPage] = useState(1);
     const [hasMore, setHasMore] = useState(initialHasMore);
     const [isPending, startTransition] = useTransition();
@@ -54,7 +46,7 @@ export default function AccountList({ initialUsers, initialHasMore }: AccountLis
     const handleLoadMore = async () => {
         startTransition(async () => {
             const nextPage = page + 1;
-            const { users: newUsers, hasMore: newHasMore } = await getUsersForAdmin(nextPage, sort, search);
+            const { users: newUsers, hasMore: newHasMore } = await getLegacyUsersForAdmin(nextPage, sort, search);
             setUsers(prev => [...prev, ...newUsers]);
             setHasMore(newHasMore);
             setPage(nextPage);
@@ -95,10 +87,10 @@ export default function AccountList({ initialUsers, initialHasMore }: AccountLis
             <Card>
                 <CardHeader>
                     <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                        <CardTitle>User Accounts</CardTitle>
+                        <CardTitle>Registered Accounts</CardTitle>
                         <div className="flex items-center gap-2">
                              <form onSubmit={handleSearch} className="flex items-center gap-2">
-                                <Input name="search" placeholder="Search by Gaming ID..." defaultValue={searchParams.get('search') || ''} className="w-48"/>
+                                <Input name="search" placeholder="Search Username/Referral..." defaultValue={searchParams.get('search') || ''} className="w-48"/>
                                 <Button type="submit" variant="outline" size="icon"><Search className="h-4 w-4" /></Button>
                             </form>
                             <Button variant="outline" onClick={handleSortToggle}>
@@ -114,16 +106,16 @@ export default function AccountList({ initialUsers, initialHasMore }: AccountLis
                     ) : (
                         <div className="space-y-4">
                             {users.map(user => (
-                                <Card key={user._id}>
+                                <Card key={user._id.toString()}>
                                     <CardHeader>
-                                        <CardTitle className="text-base">{user.gamingId}</CardTitle>
+                                        <CardTitle className="text-base">{user.username}</CardTitle>
                                         <CardDescription>
-                                            Created: <FormattedDate dateString={user.createdAt} />
+                                            Created: <FormattedDate dateString={user.createdAt as unknown as string} />
                                         </CardDescription>
                                     </CardHeader>
                                     <CardContent>
                                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
-                                            <p className="flex items-center gap-2 font-semibold"><Coins className="w-4 h-4 text-amber-500" />{user.coins} Coins</p>
+                                            <p className="flex items-center gap-2 font-semibold"><Wallet className="w-4 h-4 text-primary" />₹{(user.walletBalance || 0).toFixed(2)}</p>
                                             <p><strong>Referral Code:</strong> {user.referralCode || 'N/A'}</p>
                                             <p><strong>Referred By:</strong> {user.referredBy || 'N/A'}</p>
                                         </div>
@@ -139,12 +131,12 @@ export default function AccountList({ initialUsers, initialHasMore }: AccountLis
                                                 <AlertDialogHeader>
                                                     <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
                                                     <AlertDialogDescription>
-                                                        This action cannot be undone. This will permanently delete the user account.
+                                                        This action cannot be undone. This will permanently delete the user account and all associated data.
                                                     </AlertDialogDescription>
                                                 </AlertDialogHeader>
                                                 <AlertDialogFooter>
                                                     <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                                    <AlertDialogAction onClick={() => handleDelete(user._id)}>
+                                                    <AlertDialogAction onClick={() => handleDelete(user._id.toString())}>
                                                         Delete
                                                     </AlertDialogAction>
                                                 </AlertDialogFooter>
