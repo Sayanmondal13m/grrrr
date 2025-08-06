@@ -125,7 +125,7 @@ const BannerAdUnit: FC<BannerAdUnitProps> = ({ adSrc, containerId, className = '
 
 
 export default function WatchAdPage() {
-  const [countdown, setCountdown] = useState(10);
+  const [countdown, setCountdown] = useState(30);
   const [isComplete, setIsComplete] = useState(false);
   const router = useRouter();
   const { toast } = useToast();
