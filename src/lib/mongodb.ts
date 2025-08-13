@@ -7,10 +7,13 @@ if (!MONGODB_URI) {
   throw new Error('Please define the MONGODB_URI environment variable inside .env');
 }
 
-let cachedClient: MongoClient | null = null;
-let cachedDb: Db | null = null;
+// Extend the Db type to include the client property for session management
+export type MongoDbWithClient = Db & { client: MongoClient };
 
-export async function connectToDatabase(): Promise<Db> {
+let cachedClient: MongoClient | null = null;
+let cachedDb: MongoDbWithClient | null = null;
+
+export async function connectToDatabase(): Promise<MongoDbWithClient> {
   if (cachedDb) {
     return cachedDb;
   }
@@ -20,7 +23,9 @@ export async function connectToDatabase(): Promise<Db> {
 
   try {
       await client.connect();
-      const db = client.db(MONGODB_DB);
+      const db = client.db(MONGODB_DB) as MongoDbWithClient;
+      // Attach the client to the db object so we can access it for transactions
+      db.client = client;
       cachedDb = db;
       return db;
   } catch (error) {

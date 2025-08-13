@@ -378,7 +378,7 @@ export async function transferCoins(
   }
 
   const db = await connectToDatabase();
-  const session = db.s.client.startSession();
+  const session = db.client.startSession();
 
   try {
     let resultMessage = '';
@@ -426,11 +426,7 @@ export async function getOrdersForUser(): Promise<Order[]> {
             .toArray();
 
         // Convert ObjectId to string for client-side usage
-        return ordersFromDb.map((order: Order) => ({
-            ...order,
-            _id: order._id.toString(),
-            createdAt: order.createdAt.toString(),
-        })) as unknown as Order[];
+        return JSON.parse(JSON.stringify(ordersFromDb));
     } catch (error) {
         console.error("Failed to fetch user orders:", error);
         return [];
@@ -659,11 +655,7 @@ export async function getOrdersForAdmin(
   const totalOrders = await db.collection('orders').countDocuments(query);
   const hasMore = skip + ordersFromDb.length < totalOrders;
 
-  const orders = ordersFromDb.map((order: any) => ({
-    ...order,
-    _id: order._id.toString(),
-    createdAt: order.createdAt.toISOString(),
-  }));
+  const orders = JSON.parse(JSON.stringify(ordersFromDb));
 
   return { orders, hasMore };
 }
@@ -691,11 +683,7 @@ export async function getLegacyUsersForAdmin(page: number, sort: string, search:
   const totalUsers = await db.collection('legacy_users').countDocuments(query);
   const hasMore = skip + usersFromDb.length < totalUsers;
 
-  const users = usersFromDb.map((user: any) => ({
-    ...user,
-    _id: user._id.toString(),
-    createdAt: user.createdAt.toISOString(),
-  }));
+  const users = JSON.parse(JSON.stringify(usersFromDb));
 
 
   return { users, hasMore };
@@ -719,11 +707,7 @@ export async function getWalletData(): Promise<{ walletBalance: number; withdraw
     
     const withdrawalsFromDb = await db.collection<Withdrawal>('withdrawals').find({ userId: user._id.toString() }).sort({ createdAt: -1 }).toArray();
 
-    const withdrawals = withdrawalsFromDb.map((w) => ({
-        ...w,
-        _id: w._id.toString(),
-        createdAt: w.createdAt.toISOString(),
-    })) as unknown as Withdrawal[];
+    const withdrawals = JSON.parse(JSON.stringify(withdrawalsFromDb));
 
     return { walletBalance: user.walletBalance || 0, withdrawals };
 }
@@ -811,11 +795,7 @@ export async function getWithdrawalsForAdmin(page: number, sort: string, status:
     const totalWithdrawals = await db.collection('withdrawals').countDocuments(query);
     const hasMore = skip + withdrawalsFromDb.length < totalWithdrawals;
 
-    const withdrawals = withdrawalsFromDb.map((w: any) => ({
-        ...w,
-        _id: w._id.toString(),
-        createdAt: w.createdAt.toISOString(),
-    }));
+    const withdrawals = JSON.parse(JSON.stringify(withdrawalsFromDb));
 
     return { withdrawals, hasMore };
 }
@@ -869,46 +849,27 @@ const productsToSeed = [
 async function seedProducts() {
   const db = await connectToDatabase();
   const productCollection = db.collection<Product>('products');
-  const count = await productCollection.countDocuments();
-
-  const productsToInsert = productsToSeed.map(p => ({
-    ...p,
-    quantity: 1,
-    isAvailable: true,
-    isVanished: false,
-  }));
-
-  if (count === 0) {
-    console.log('No products found, seeding database...');
-    await productCollection.insertMany(productsToInsert as any[]);
-    console.log(`Database seeded with ${productsToInsert.length} products.`);
-  } else {
-    console.log('Products found, ensuring data is up to date...');
-    const bulkOps = productsToSeed.map(p => ({
-      updateOne: {
-        filter: { name: p.name },
-        update: {
-          $set: {
-            price: p.price,
-            imageUrl: p.imageUrl,
-            coinsApplicable: p.coinsApplicable,
-            endDate: p.endDate,
-          },
-          $setOnInsert: {
-            name: p.name,
+  
+  console.log('Ensuring products are seeded correctly...');
+  
+  const bulkOps = productsToSeed.map(p => ({
+    updateOne: {
+      filter: { name: p.name },
+      update: {
+        $setOnInsert: {
+            ...p,
             quantity: 1,
             isAvailable: true,
             isVanished: false,
-          }
-        },
-        upsert: true,
+        }
       },
-    }));
+      upsert: true,
+    },
+  }));
 
-    if (bulkOps.length > 0) {
-      await productCollection.bulkWrite(bulkOps as any);
-      console.log(`Upserted ${bulkOps.length} products to ensure data is correct.`);
-    }
+  if (bulkOps.length > 0) {
+    await productCollection.bulkWrite(bulkOps as any);
+    console.log(`Product seeding/update check complete.`);
   }
 }
   
@@ -922,11 +883,7 @@ export async function getProducts(): Promise<Product[]> {
       .sort({ price: 1 })
       .toArray();
 
-    return productsFromDb.map((p: any) => ({
-        ...p,
-        _id: p._id.toString(),
-        coinsApplicable: p.coinsApplicable || 0,
-    }));
+    return JSON.parse(JSON.stringify(productsFromDb));
 }
 
 const productUpdateSchema = z.object({
@@ -956,10 +913,9 @@ export async function updateProduct(productId: string, formData: FormData): Prom
     const endDate = validatedFields.data.endDate ? new Date(validatedFields.data.endDate) : undefined;
 
 
-    const { ObjectId } = await import('mongodb');
     const db = await connectToDatabase();
     await db.collection<Product>('products').updateOne(
-        { _id: new ObjectId(productId) as any },
+        { _id: new ObjectId(productId) },
         { $set: { name, price, quantity, isAvailable, coinsApplicable, endDate: endDate } }
     );
     
@@ -974,10 +930,9 @@ export async function vanishProduct(productId: string): Promise<{ success: boole
         return { success: false, message: 'Unauthorized' };
     }
 
-    const { ObjectId } = await import('mongodb');
     const db = await connectToDatabase();
     await db.collection<Product>('products').updateOne(
-        { _id: new ObjectId(productId) as any },
+        { _id: new ObjectId(productId) },
         { $set: { isVanished: true } }
     );
 
@@ -995,10 +950,7 @@ export async function getVanishedProducts() {
       .sort({ price: 1 })
       .toArray();
 
-    return productsFromDb.map((p: any) => ({
-        ...p,
-        _id: p._id.toString(),
-    }));
+    return JSON.parse(JSON.stringify(productsFromDb));
 }
 
 export async function restoreProduct(productId: string): Promise<{ success: boolean; message: string }> {
@@ -1007,10 +959,9 @@ export async function restoreProduct(productId: string): Promise<{ success: bool
         return { success: false, message: 'Unauthorized' };
     }
 
-    const { ObjectId } = await import('mongodb');
     const db = await connectToDatabase();
     await db.collection<Product>('products').updateOne(
-        { _id: new ObjectId(productId) as any },
+        { _id: new ObjectId(productId) },
         { $set: { isVanished: false } }
     );
 
