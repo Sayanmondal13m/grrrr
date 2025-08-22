@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useMemo } from 'react';
@@ -66,8 +67,8 @@ export default function ProductList({ initialProducts, user }: ProductListProps)
           Purchase Item Now
         </h2>
         
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-8 md:mb-12">
-            <div className="relative flex-grow w-full max-w-xs">
+        <div className="flex flex-row items-center justify-end gap-2 mb-8 md:mb-12">
+            <div className="relative flex-grow max-w-xs">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                 <Input
                     type="text"
@@ -78,7 +79,7 @@ export default function ProductList({ initialProducts, user }: ProductListProps)
                 />
             </div>
             <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-                <SelectTrigger className="w-full sm:w-[180px]">
+                <SelectTrigger className="w-[150px] flex-shrink-0">
                     <SelectValue placeholder="Select Category" />
                 </SelectTrigger>
                 <SelectContent>
