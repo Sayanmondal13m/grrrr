@@ -1,17 +1,17 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useActionState } from 'react';
 import Link from 'next/link';
 import { Card, CardContent } from './ui/card';
-import { Coins, Tv, Shield, KeyRound, Loader2, Send } from 'lucide-react';
+import { Coins, Tv, Shield, KeyRound, Loader2, Send, AlertCircle } from 'lucide-react';
 import type { User } from '@/lib/definitions';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogClose } from '@/components/ui/dialog';
 import { Label } from './ui/label';
 import { Input } from './ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { transferCoins, setGiftPassword } from '@/app/actions';
-import { useFormState, useFormStatus } from 'react-dom';
+import { useFormStatus } from 'react-dom';
 import GamingIdModal from './gaming-id-modal';
 import { Button } from './ui/button';
 import { Alert, AlertDescription, AlertTitle } from './ui/alert';
@@ -48,8 +48,8 @@ export default function CoinSystem({ user }: CoinSystemProps) {
   const [hasModalBeenDismissed, setHasModalBeenDismissed] = useState(false);
   const { toast } = useToast();
 
-  const [setPasswordState, setPasswordFormAction] = useFormState(setGiftPassword, initialState);
-  const [transferState, transferFormAction] = useFormState(transferCoins, initialState);
+  const [setPasswordState, setPasswordFormAction] = useActionState(setGiftPassword, initialState);
+  const [transferState, transferFormAction] = useActionState(transferCoins, initialState);
 
   useEffect(() => {
     if (!user && !hasModalBeenDismissed) {
