@@ -15,10 +15,17 @@ export default function FirebaseMessagingProvider({children}: {children: React.R
       try {
         if (typeof window !== 'undefined' && 'serviceWorker' in navigator) {
           const messaging = getMessaging(app);
+          
+          // Wait for the service worker to be ready
+          const swRegistration = await navigator.serviceWorker.register('/firebase-messaging-sw.js');
+          
           const permission = await Notification.requestPermission();
           
           if (permission === 'granted') {
-            const currentToken = await getToken(messaging, { vapidKey: process.env.NEXT_PUBLIC_FIREBASE_VAPID_KEY });
+            const currentToken = await getToken(messaging, { 
+                vapidKey: process.env.NEXT_PUBLIC_FIREBASE_VAPID_KEY,
+                serviceWorkerRegistration: swRegistration 
+            });
             if (currentToken) {
               await saveFcmToken(currentToken);
             } else {
