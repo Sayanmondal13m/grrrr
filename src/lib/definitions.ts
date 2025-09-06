@@ -96,3 +96,9 @@ export interface Notification {
     createdAt: Date;
     isPopup?: boolean;
 }
+
+export interface Event {
+    _id: ObjectId;
+    imageUrl: string;
+    createdAt: Date;
+}

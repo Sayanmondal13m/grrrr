@@ -9,6 +9,7 @@
 
 
 
+
 'use server';
 
 import { customerFAQChatbot, type CustomerFAQChatbotInput } from '@/ai/flows/customer-faq-chatbot';
@@ -17,7 +18,7 @@ import bcrypt from 'bcryptjs';
 import { SignJWT, jwtVerify } from 'jose';
 import { cookies } from 'next/headers';
 import { z } from 'zod';
-import { type User, type Order, type Product, type Withdrawal, type LegacyUser, type Notification } from '@/lib/definitions';
+import { type User, type Order, type Product, type Withdrawal, type LegacyUser, type Notification, type Event } from '@/lib/definitions';
 import { randomBytes, createHmac } from 'crypto';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
@@ -1553,4 +1554,58 @@ export async function markNotificationsAsRead(): Promise<{ success: boolean }> {
     
     revalidatePath('/'); // Revalidate to update unread count
     return { success: true };
+}
+
+// --- Event Management Actions ---
+
+export async function getEvents(): Promise<Event[]> {
+    noStore();
+    const db = await connectToDatabase();
+    const eventsFromDb = await db.collection<Event>('events')
+      .find()
+      .sort({ createdAt: -1 })
+      .toArray();
+    return JSON.parse(JSON.stringify(eventsFromDb));
+}
+
+export async function addEvent(imageUrl: string): Promise<{ success: boolean; message: string; event?: Event }> {
+    const isAdmin = await isAdminAuthenticated();
+    if (!isAdmin) {
+        return { success: false, message: 'Unauthorized' };
+    }
+    
+    if (!imageUrl) {
+        return { success: false, message: 'Image URL is required' };
+    }
+
+    const db = await connectToDatabase();
+    
+    const newEvent: Omit<Event, '_id'> = {
+        imageUrl,
+        createdAt: new Date(),
+    };
+
+    const result = await db.collection<Event>('events').insertOne(newEvent as Event);
+    
+    revalidatePath('/admin/events');
+    revalidatePath('/');
+    
+    const createdEvent = { ...newEvent, _id: result.insertedId };
+
+    return { success: true, message: 'New event added.', event: JSON.parse(JSON.stringify(createdEvent)) };
+}
+
+export async function deleteEvent(eventId: string): Promise<{ success: boolean; message: string }> {
+    const isAdmin = await isAdminAuthenticated();
+    if (!isAdmin) {
+        return { success: false, message: 'Unauthorized' };
+    }
+
+    const db = await connectToDatabase();
+    await db.collection<Event>('events').deleteOne({ _id: new ObjectId(eventId) });
+
+    revalidatePath('/admin/events');
+    revalidatePath('/');
+
+    return { success: true, message: 'Event deleted.' };
 }

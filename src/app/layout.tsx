@@ -7,9 +7,10 @@ import Header from '@/components/layout/header';
 import Footer from '@/components/layout/footer';
 import { useState, useEffect } from 'react';
 import LoadingScreen from '@/components/loading-screen';
-import { getNotificationsForUser, getUserData, markNotificationAsRead } from './actions';
-import type { Notification, User } from '@/lib/definitions';
+import { getEvents, getNotificationsForUser, getUserData, markNotificationAsRead } from './actions';
+import type { Event, Notification, User } from '@/lib/definitions';
 import PopupNotification from '@/components/popup-notification';
+import EventModal from '@/components/event-modal';
 
 
 export default function RootLayout({
@@ -21,14 +22,27 @@ export default function RootLayout({
   const [user, setUser] = useState<User | null>(null);
   const [standardNotifications, setStandardNotifications] = useState<Notification[]>([]);
   const [popupNotifications, setPopupNotifications] = useState<Notification[]>([]);
+  const [events, setEvents] = useState<Event[]>([]);
+  const [currentEventIndex, setCurrentEventIndex] = useState(0);
+  const [showEventModal, setShowEventModal] = useState(false);
 
   useEffect(() => {
     const fetchInitialData = async () => {
       const userData = await getUserData();
       setUser(userData);
+      
+      const allEvents = await getEvents();
+      const eventsSeen = sessionStorage.getItem('eventsSeen');
+
+      if (!eventsSeen) {
+        setEvents(allEvents);
+        if(allEvents.length > 0) {
+            setShowEventModal(true);
+        }
+      }
+
       if (userData) {
         const allNotifications = await getNotificationsForUser();
-        // Separate notifications into standard and popup
         const standard = allNotifications.filter(n => !n.isPopup);
         const popups = allNotifications.filter(n => n.isPopup && !n.isRead);
 
@@ -39,19 +53,26 @@ export default function RootLayout({
 
     fetchInitialData();
 
-    // Simulate loading time
     const timer = setTimeout(() => {
       setIsLoading(false);
-    }, 1000); // Animation is 1s and runs once, so 1s total
+    }, 1000); 
 
     return () => clearTimeout(timer);
   }, []);
 
   const handlePopupClose = async (notificationId: string) => {
-    // Mark the notification as read on the server
     await markNotificationAsRead(notificationId);
-    // Remove the closed notification from the local state to show the next one
     setPopupNotifications(prev => prev.filter(n => n._id.toString() !== notificationId));
+  };
+  
+  const handleEventClose = () => {
+    const nextIndex = currentEventIndex + 1;
+    if (nextIndex < events.length) {
+      setCurrentEventIndex(nextIndex);
+    } else {
+      setShowEventModal(false);
+      sessionStorage.setItem('eventsSeen', 'true');
+    }
   };
 
   return (
@@ -76,6 +97,9 @@ export default function RootLayout({
             notification={popupNotifications[0]}
             onClose={() => handlePopupClose(popupNotifications[0]._id.toString())}
           />
+        )}
+        {showEventModal && events.length > 0 && (
+            <EventModal event={events[currentEventIndex]} onClose={handleEventClose} />
         )}
       </body>
     </html>

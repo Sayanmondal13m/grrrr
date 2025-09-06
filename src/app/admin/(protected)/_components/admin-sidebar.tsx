@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { logoutAdmin } from '@/app/actions';
-import { Home, ListChecks, ListX, Users, LogOut, Banknote, Tag, ArchiveRestore, Coins, ShieldBan, Box, EyeOff, Bell } from 'lucide-react';
+import { Home, ListChecks, ListX, Users, LogOut, Banknote, Tag, ArchiveRestore, Coins, ShieldBan, Box, EyeOff, Bell, CalendarPlus } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import Image from 'next/image';
 
@@ -21,6 +21,7 @@ const navItems = [
   { href: '/admin/vanished-products', label: 'Vanished Products', icon: ArchiveRestore },
   { href: '/admin/coin-management', label: 'Coin Management', icon: Coins },
   { href: '/admin/notifications', label: 'Send Notification', icon: Bell },
+  { href: '/admin/events', label: 'Manage Events', icon: CalendarPlus },
 ];
 
 export default function AdminSidebar() {
