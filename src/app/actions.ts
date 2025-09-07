@@ -1710,3 +1710,25 @@ export async function getAiLogs(page: number, search: string) {
 
     return { logs, hasMore, totalLogs };
 }
+
+export async function deleteAiLog(logId: string): Promise<{ success: boolean; message: string }> {
+    const isAdmin = await isAdminAuthenticated();
+    if (!isAdmin) {
+        return { success: false, message: 'Unauthorized' };
+    }
+    
+    try {
+        const db = await connectToDatabase();
+        const result = await db.collection<AiLog>('ai_logs').deleteOne({ _id: new ObjectId(logId) });
+        
+        if (result.deletedCount === 0) {
+            return { success: false, message: 'Log not found.' };
+        }
+
+        revalidatePath('/admin/ai-logs');
+        return { success: true, message: 'Log deleted successfully.' };
+    } catch (error) {
+        console.error('Error deleting AI log:', error);
+        return { success: false, message: 'An unexpected error occurred.' };
+    }
+}

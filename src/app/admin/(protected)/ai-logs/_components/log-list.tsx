@@ -3,13 +3,16 @@
 import { useState, useTransition, useEffect } from 'react';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Loader2, Search } from 'lucide-react';
-import { getAiLogs } from '@/app/actions';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
+import { Loader2, Search, Trash2 } from 'lucide-react';
+import { getAiLogs, deleteAiLog } from '@/app/actions';
 import { Input } from '@/components/ui/input';
 import { type AiLog } from '@/lib/definitions';
 import { Badge } from '@/components/ui/badge';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
+import { useToast } from '@/hooks/use-toast';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
+
 
 interface LogListProps {
     initialLogs: AiLog[];
@@ -40,6 +43,8 @@ export default function LogList({ initialLogs, initialHasMore, totalLogs }: LogL
     const router = useRouter();
     const pathname = usePathname();
     const searchParams = useSearchParams();
+    const { toast } = useToast();
+
 
     const search = searchParams.get('search') || '';
 
@@ -67,6 +72,18 @@ export default function LogList({ initialLogs, initialHasMore, totalLogs }: LogL
         params.set('search', searchQuery);
         params.delete('page');
         router.push(`${pathname}?${params.toString()}`);
+    };
+    
+    const handleDelete = async (logId: string) => {
+        startTransition(async () => {
+            const result = await deleteAiLog(logId);
+            if (result.success) {
+                setLogs(prev => prev.filter(log => log._id.toString() !== logId));
+                toast({ title: 'Success', description: result.message });
+            } else {
+                toast({ variant: 'destructive', title: 'Error', description: result.message });
+            }
+        });
     };
 
     return (
@@ -113,6 +130,29 @@ export default function LogList({ initialLogs, initialHasMore, totalLogs }: LogL
                                           </AccordionItem>
                                         </Accordion>
                                     </CardContent>
+                                    <CardFooter className="flex justify-end p-2 bg-muted/50">
+                                         <AlertDialog>
+                                            <AlertDialogTrigger asChild>
+                                                <Button variant="destructive" size="icon" disabled={isPending}>
+                                                    <Trash2 className="h-4 w-4" />
+                                                </Button>
+                                            </AlertDialogTrigger>
+                                            <AlertDialogContent>
+                                                <AlertDialogHeader>
+                                                    <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                                                    <AlertDialogDescription>
+                                                        This action cannot be undone. This will permanently delete this conversation log.
+                                                    </AlertDialogDescription>
+                                                </AlertDialogHeader>
+                                                <AlertDialogFooter>
+                                                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                                    <AlertDialogAction onClick={() => handleDelete(log._id.toString())} disabled={isPending}>
+                                                        {isPending ? 'Deleting...' : 'Delete'}
+                                                    </AlertDialogAction>
+                                                </AlertDialogFooter>
+                                            </AlertDialogContent>
+                                        </AlertDialog>
+                                    </CardFooter>
                                 </Card>
                             ))}
                         </div>
