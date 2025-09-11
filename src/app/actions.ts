@@ -1,6 +1,7 @@
 
 
 
+
 'use server';
 
 import { customerFAQChatbot, type CustomerFAQChatbotInput } from '@/ai/flows/customer-faq-chatbot';
@@ -1063,7 +1064,7 @@ export async function updateWithdrawalStatus(withdrawalId: string, status: 'Comp
 }
 
 // --- Product Management Actions ---
-export async function getProducts(query?: any) {
+export async function getProducts(query?: any): Promise<Product[]> {
     noStore();
     const db = await connectToDatabase();
     
@@ -1090,8 +1091,17 @@ export async function getProducts(query?: any) {
       .find(baseQuery)
       .sort({ displayOrder: 1 })
       .toArray();
+      
+    // Handle automatic expiration
+    const now = new Date();
+    const processedProducts = productsFromDb.map(product => {
+        if (product.endDate && new Date(product.endDate) < now) {
+            return { ...product, isAvailable: false };
+        }
+        return product;
+    });
 
-    return JSON.parse(JSON.stringify(productsFromDb));
+    return JSON.parse(JSON.stringify(processedProducts));
 }
 
 
@@ -1920,5 +1930,6 @@ export async function getUserProductControls(gamingId: string): Promise<UserProd
         return [];
     }
 }
+
 
 

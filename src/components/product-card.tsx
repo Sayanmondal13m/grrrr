@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import Image from 'next/image';
@@ -124,9 +125,16 @@ export default function ProductCard({ product, user, hasPurchased, control }: Pr
   
   // Determine buy button state
   const getBuyButton = () => {
+    const isExpired = product.endDate && new Date(product.endDate) < new Date();
+    
+    if (isExpired && !product.isAvailable) {
+       return <Button className="w-full font-bold text-base" disabled variant="secondary"><Ban className="mr-2 h-4 w-4" />Expired</Button>;
+    }
+    
     if (!product.isAvailable) {
       return <Button className="w-full font-bold text-base" disabled variant="secondary"><Ban className="mr-2 h-4 w-4" />Item Unavailable</Button>;
     }
+
     if (isBlockedByControl) {
       return <Button className="w-full font-bold text-base" disabled variant="secondary"><Ban className="mr-2 h-4 w-4" />{control.blockReason}</Button>;
     }
