@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogClose, DialogTrigger } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
-import { ArrowUpDown, Loader2, Search, Coins, Eye, ShieldBan, ShieldCheck, History, Users, EyeOff, Bell, BellOff } from 'lucide-react';
+import { ArrowUpDown, Loader2, Search, Coins, Eye, ShieldBan, ShieldCheck, History, Users, EyeOff, Bell, BellOff, Calendar } from 'lucide-react';
 import { banUser, getUsersForAdmin, unbanUser, hideUser } from '@/app/actions';
 import { useToast } from '@/hooks/use-toast';
 import { Input } from '@/components/ui/input';
@@ -19,6 +19,9 @@ import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { cn } from '@/lib/utils';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Calendar as CalendarIcon } from 'lucide-react';
+import { Calendar as CalendarComponent } from '@/components/ui/calendar';
 
 interface UserListProps {
     initialUsers: User[];
@@ -42,6 +45,10 @@ const FormattedDate = ({ dateString }: { dateString: string }) => {
 }
 
 export default function UserList({ initialUsers, initialHasMore, totalUsers }: UserListProps) {
+    const router = useRouter();
+    const pathname = usePathname();
+    const searchParams = useSearchParams();
+    
     const [users, setUsers] = useState<User[]>(initialUsers);
     const [page, setPage] = useState(1);
     const [hasMore, setHasMore] = useState(initialHasMore);
@@ -49,35 +56,51 @@ export default function UserList({ initialUsers, initialHasMore, totalUsers }: U
     const [banMessage, setBanMessage] = useState('');
     const [isBanModalOpen, setIsBanModalOpen] = useState(false);
     const [selectedUser, setSelectedUser] = useState<User | null>(null);
-    const router = useRouter();
-    const pathname = usePathname();
-    const searchParams = useSearchParams();
     const { toast } = useToast();
 
-    const sort = searchParams.get('sort') || 'visits'; // Default to visits
+    const sort = searchParams.get('sort') || 'visits';
     const search = searchParams.get('search') || '';
+    const since = searchParams.get('since') || '';
+
+    const [sinceDate, setSinceDate] = useState<Date | undefined>(since ? new Date(since) : undefined);
 
     useEffect(() => {
         setUsers(initialUsers);
         setHasMore(initialHasMore);
         setPage(1);
     }, [initialUsers, initialHasMore]);
+    
+    useEffect(() => {
+        // When sort changes away from 'visits', clear the date
+        if (sort !== 'visits' && sinceDate) {
+            setSinceDate(undefined);
+        }
+    }, [sort, sinceDate]);
 
     const handleLoadMore = async () => {
         startTransition(async () => {
             const nextPage = page + 1;
-            const { users: newUsers, hasMore: newHasMore } = await getUsersForAdmin(nextPage, sort, search);
+            const { users: newUsers, hasMore: newHasMore } = await getUsersForAdmin(nextPage, sort, search, since);
             setUsers(prev => [...prev, ...newUsers]);
             setHasMore(newHasMore);
             setPage(nextPage);
         });
     };
-
-    const handleSortChange = (newSort: string) => {
+    
+    const applyFilters = () => {
         const params = new URLSearchParams(searchParams);
-        params.set('sort', newSort);
+        params.set('sort', sort);
+        params.set('search', search);
+
+        if (sort === 'visits' && sinceDate) {
+            params.set('since', sinceDate.toISOString());
+        } else {
+            params.delete('since');
+        }
+        
+        params.delete('page');
         router.push(`${pathname}?${params.toString()}`);
-    };
+    }
 
     const handleSearch = (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
@@ -150,16 +173,63 @@ export default function UserList({ initialUsers, initialHasMore, totalUsers }: U
                                 <Badge variant="secondary" className="text-sm">{totalUsers}</Badge>
                             )}
                         </div>
-                        <div className="flex items-center gap-2">
+                        <div className="flex flex-wrap items-center gap-2">
                              <form onSubmit={handleSearch} className="flex items-center gap-2">
-                                <Input name="search" placeholder="Search Gaming/Referral ID..." defaultValue={searchParams.get('search') || ''} className="w-56"/>
+                                <Input name="search" placeholder="Search Gaming/Referral ID..." defaultValue={searchParams.get('search') || ''} className="w-48"/>
                                 <Button type="submit" variant="outline" size="icon"><Search className="h-4 w-4" /></Button>
                             </form>
-                            <select value={sort} onChange={(e) => handleSortChange(e.target.value)} className="h-10 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2">
+                             <select value={sort} onChange={(e) => {
+                                 const newSort = e.target.value;
+                                 const params = new URLSearchParams(searchParams);
+                                 params.set('sort', newSort);
+                                 if (newSort !== 'visits') {
+                                     params.delete('since');
+                                 }
+                                 router.push(`${pathname}?${params.toString()}`);
+                             }} className="h-10 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2">
                                 {sortOptions.map(option => (
                                     <option key={option.value} value={option.value}>{option.label}</option>
                                 ))}
                             </select>
+                            
+                            {sort === 'visits' && (
+                                <div className="flex items-center gap-2">
+                                     <Popover>
+                                        <PopoverTrigger asChild>
+                                          <Button
+                                            variant={"outline"}
+                                            className={cn(
+                                              "w-[240px] justify-start text-left font-normal",
+                                              !sinceDate && "text-muted-foreground"
+                                            )}
+                                          >
+                                            <CalendarIcon className="mr-2 h-4 w-4" />
+                                            {sinceDate ? sinceDate.toLocaleString() : <span>Visits since...</span>}
+                                          </Button>
+                                        </PopoverTrigger>
+                                        <PopoverContent className="w-auto p-0" align="start">
+                                            <CalendarComponent
+                                                mode="single"
+                                                selected={sinceDate}
+                                                onSelect={setSinceDate}
+                                                initialFocus
+                                            />
+                                            <div className="p-2 border-t">
+                                                <Input type="time" step="1" onChange={(e) => {
+                                                    const [h, m, s] = e.target.value.split(':').map(Number);
+                                                    setSinceDate(prev => {
+                                                        const newDate = prev ? new Date(prev) : new Date();
+                                                        newDate.setHours(h, m, s || 0);
+                                                        return newDate;
+                                                    })
+                                                }}/>
+                                            </div>
+                                        </PopoverContent>
+                                     </Popover>
+                                     <Button onClick={applyFilters}>Apply</Button>
+                                </div>
+                            )}
+
                         </div>
                     </div>
                 </CardHeader>

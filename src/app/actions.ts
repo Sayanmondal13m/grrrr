@@ -1,5 +1,6 @@
 
 
+
 'use server';
 
 import { customerFAQChatbot, type CustomerFAQChatbotInput } from '@/ai/flows/customer-faq-chatbot';
@@ -1332,40 +1333,67 @@ export async function addCoinsToUser(gamingId: string, amount: number): Promise<
 }
 
 // --- Admin User Management ---
-export async function getUsersForAdmin(page: number, sort: string, search: string) {
+export async function getUsersForAdmin(page: number, sort: string, search: string, since?: string) {
     noStore();
     const db = await connectToDatabase();
     const skip = (page - 1) * PAGE_SIZE;
 
-    let query: any = { isHidden: { $ne: true } }; // Default to not showing hidden users
-     if (search) {
+    let query: any = { isHidden: { $ne: true } };
+    if (search) {
         query.$or = [
             { gamingId: { $regex: search, $options: 'i' } },
             { referredByCode: { $regex: search, $options: 'i' } }
-        ]
+        ];
+    }
+    
+    const sinceDate = since ? new Date(since) : null;
+    let aggregationPipeline: any[] = [];
+
+    if (sort === 'visits' && sinceDate) {
+        // Count visits *after* the 'since' date
+        aggregationPipeline.push(
+            {
+                $addFields: {
+                    recentVisits: {
+                        $filter: {
+                            input: "$visits",
+                            as: "visit",
+                            cond: { $gte: [ "$$visit", sinceDate ] }
+                        }
+                    }
+                }
+            },
+            {
+                $addFields: {
+                    visitsCount: { $size: { $ifNull: [ "$recentVisits", [] ] } }
+                }
+            }
+        );
+    } else {
+         aggregationPipeline.push({
+            $addFields: { visitsCount: { $size: { $ifNull: [ "$visits", [] ] } } }
+        });
     }
 
-    let sortOption: any = { createdAt: -1 }; // Default sort by newest
+    aggregationPipeline.push({ $match: query });
+
+    let sortOption: any = { createdAt: -1 }; // Default sort
     if (sort === 'asc') {
-        sortOption = { createdAt: 1 }; // Sort by oldest
+        sortOption = { createdAt: 1 };
     } else if (sort === 'visits') {
-        sortOption = { 'visitsCount': -1, 'createdAt': -1 }; // Sort by most visits
+        sortOption = { 'visitsCount': -1, 'createdAt': -1 };
     }
+    aggregationPipeline.push({ $sort: sortOption });
+    
+    aggregationPipeline.push({ $skip: skip });
+    aggregationPipeline.push({ $limit: PAGE_SIZE });
 
-
-    const usersFromDb = await db.collection<User>('users').aggregate([
-        { $addFields: { visitsCount: { $size: { $ifNull: [ "$visits", [] ] } } } },
-        { $match: query },
-        { $sort: sortOption },
-        { $skip: skip },
-        { $limit: PAGE_SIZE }
-    ]).toArray();
-
+    const usersFromDb = await db.collection<User>('users').aggregate(aggregationPipeline).toArray();
     const totalUsers = await db.collection('users').countDocuments(query);
     const hasMore = skip + usersFromDb.length < totalUsers;
     
     const users = JSON.parse(JSON.stringify(usersFromDb));
-
+    
     return { users, hasMore, totalUsers };
 }
 
@@ -1892,4 +1920,5 @@ export async function getUserProductControls(gamingId: string): Promise<UserProd
         return [];
     }
 }
+
 
