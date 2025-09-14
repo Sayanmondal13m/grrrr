@@ -6,6 +6,7 @@
 
 
 
+
 'use server';
 
 import { customerFAQChatbot, type CustomerFAQChatbotInput } from '@/ai/flows/customer-faq-chatbot';
@@ -639,27 +640,24 @@ export async function createRazorpayOrder(amount: number, gamingId: string, prod
     });
 
     const options = {
-        type: 'link',
         amount: amount * 100, // amount in the smallest currency unit
         currency: "INR",
+        upi_link: true, // This creates a UPI-only payment link
         description: `Purchase for Gaming ID: ${gamingId}`,
         notes: {
             gamingId: gamingId,
             productId: productId,
-        },
-        payment_methods: {
-            upi: true,
         },
         callback_url: `${process.env.NEXT_PUBLIC_BASE_URL}/order`,
         callback_method: 'get' as const
     };
 
     try {
-        const invoice = await razorpay.invoices.create(options);
-        return { success: true, paymentLink: invoice.short_url };
-    } catch (error) {
-        console.error('Error creating Razorpay UPI invoice:', error);
-        return { success: false, error: 'Failed to create payment link.' };
+        const paymentLink = await razorpay.paymentLink.create(options);
+        return { success: true, paymentLink: paymentLink.short_url };
+    } catch (error: any) {
+        console.error('Error creating Razorpay UPI payment link:', error.error?.description || error);
+        return { success: false, error: 'Failed to create payment link. ' + (error.error?.description || '') };
     }
 }
 
@@ -1866,6 +1864,7 @@ export async function getUserProductControls(gamingId: string): Promise<UserProd
         return [];
     }
 }
+
 
 
 

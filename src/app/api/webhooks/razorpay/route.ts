@@ -1,4 +1,5 @@
 
+
 import { NextRequest, NextResponse } from 'next/server';
 import { createHmac } from 'crypto';
 import { connectToDatabase } from '@/lib/mongodb';
@@ -22,49 +23,29 @@ export async function POST(req: NextRequest) {
   }
 
   // 1. Verify the webhook signature
-  let expectedSignature;
   try {
-      // For standard payment links and invoices
-      if (req.url.includes('?invoice_id=')) {
-          expectedSignature = createHmac('sha256', WEBHOOK_SECRET)
-              .update(body)
-              .digest('hex');
-      } else {
-          // This path might be needed for standard checkout, keeping for robustness
-          const payloadString = JSON.stringify(JSON.parse(body));
-           expectedSignature = createHmac('sha256', WEBHOOK_SECRET)
-            .update(payloadString)
-            .digest('hex');
+      const hmac = createHmac('sha256', WEBHOOK_SECRET);
+      hmac.update(body);
+      const generatedSignature = hmac.digest('hex');
+
+      if (generatedSignature !== signature) {
+          console.error('Invalid Razorpay webhook signature.');
+          return NextResponse.json({ success: false, message: 'Invalid signature.' }, { status: 400 });
       }
-
-  } catch(err) {
-      expectedSignature = createHmac('sha256', WEBHOOK_SECRET)
-            .update(body)
-            .digest('hex');
+  } catch (error) {
+      console.error('Error during webhook signature verification:', error);
+      return NextResponse.json({ success: false, message: 'Signature verification failed.' }, { status: 500 });
   }
-
-
-  if (expectedSignature !== signature) {
-    // This can happen with invoice webhooks, they don't seem to stringify the body
-    // Let's try matching against the raw body for invoice payments
-     const rawBodySignature = createHmac('sha256', WEBHOOK_SECRET)
-        .update(body)
-        .digest('hex');
-    if (rawBodySignature !== signature) {
-        return NextResponse.json({ success: false, message: 'Invalid signature.' }, { status: 400 });
-    }
-  }
-
 
   const payload = JSON.parse(body);
 
-  // 2. Handle the correct payment event (payment_link.paid or invoice.paid)
-  if (payload.event === 'payment.captured' || payload.event === 'invoice.paid') {
+  // 2. Handle the correct payment event `payment_link.paid`
+  if (payload.event === 'payment_link.paid') {
+    const paymentLinkEntity = payload.payload.payment_link.entity;
     const paymentEntity = payload.payload.payment.entity;
-    const invoiceEntity = payload.payload.invoice.entity;
 
     const { id: razorpayPaymentId } = paymentEntity;
-    const { gamingId, productId } = invoiceEntity.notes || paymentEntity.notes;
+    const { gamingId, productId } = paymentLinkEntity.notes;
 
     if (!productId || !gamingId) {
       console.error('Webhook payload missing productId or gamingId in notes');
