@@ -10,6 +10,7 @@
 
 
 
+
 'use server';
 
 import { customerFAQChatbot, type CustomerFAQChatbotInput } from '@/ai/flows/customer-faq-chatbot';
@@ -1760,6 +1761,30 @@ export async function findUserAndProductsForControl(gamingId: string): Promise<{
     }
 }
 
+export async function setUserRedeemDisabled(gamingId: string, disabled: boolean): Promise<{ success: boolean, message: string }> {
+    const isAdmin = await isAdminAuthenticated();
+    if (!isAdmin) return { success: false, message: "Unauthorized" };
+
+    try {
+        const db = await connectToDatabase();
+        const result = await db.collection<User>('users').updateOne(
+            { gamingId },
+            { $set: { isRedeemDisabled: disabled } }
+        );
+
+        if (result.modifiedCount === 0 && result.matchedCount === 0) {
+            return { success: false, message: 'User not found.' };
+        }
+
+        revalidatePath('/'); // To update user data on client
+        revalidatePath('/admin/user-product-controls');
+        return { success: true, message: `Redeem code payments ${disabled ? 'disabled' : 'enabled'} for ${gamingId}.` };
+    } catch (error) {
+        console.error("Error setting redeem code disabled status:", error);
+        return { success: false, message: 'An error occurred.' };
+    }
+}
+
 const controlRuleSchema = z.object({
     gamingId: z.string(),
     productId: z.string(),
@@ -1887,6 +1912,7 @@ export async function getUserProductControls(gamingId: string): Promise<UserProd
         return [];
     }
 }
+
 
 
 

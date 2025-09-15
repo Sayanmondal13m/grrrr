@@ -7,12 +7,14 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Loader2, Search, Trash2, Lock } from 'lucide-react';
+import { Loader2, Search, Trash2, Lock, FileCode } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { findUserAndProductsForControl, setControlRule, deleteControlRule, getActiveControlRules } from '@/app/actions';
+import { findUserAndProductsForControl, setControlRule, deleteControlRule, getActiveControlRules, setUserRedeemDisabled } from '@/app/actions';
 import type { User, Product, UserProductControl } from '@/lib/definitions';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Badge } from '@/components/ui/badge';
+import { Separator } from '@/components/ui/separator';
+import { Switch } from '@/components/ui/switch';
 
 
 interface UserProductControlManagerProps {
@@ -90,6 +92,19 @@ export default function UserProductControlManager({ initialRules, initialHasMore
             } else {
                 setFoundUser(null);
                 setProducts([]);
+                toast({ variant: 'destructive', title: 'Error', description: result.message });
+            }
+        });
+    };
+
+    const handleRedeemToggle = async (checked: boolean) => {
+        if (!foundUser) return;
+        startSubmitTransition(async () => {
+            const result = await setUserRedeemDisabled(foundUser.gamingId, checked);
+            if (result.success) {
+                toast({ title: 'Success', description: result.message });
+                setFoundUser(prev => prev ? { ...prev, isRedeemDisabled: checked } : null);
+            } else {
                 toast({ variant: 'destructive', title: 'Error', description: result.message });
             }
         });
@@ -179,7 +194,28 @@ export default function UserProductControlManager({ initialRules, initialHasMore
                         
                         {foundUser && (
                            <div className="p-4 border rounded-md bg-muted/50 space-y-4">
-                                <p className="font-semibold">Setting rule for: <span className="font-mono">{foundUser.gamingId}</span></p>
+                                <p className="font-semibold">Setting controls for: <span className="font-mono">{foundUser.gamingId}</span></p>
+
+                                <div className="flex items-center justify-between rounded-lg border p-4">
+                                    <div className="space-y-0.5">
+                                        <h3 className="font-medium flex items-center gap-2">
+                                            <FileCode />
+                                            Redeem Code Payments
+                                        </h3>
+                                        <p className="text-sm text-muted-foreground">
+                                            Enable or disable the redeem code payment option for this user.
+                                        </p>
+                                    </div>
+                                    <Switch
+                                        checked={foundUser.isRedeemDisabled}
+                                        onCheckedChange={handleRedeemToggle}
+                                        disabled={isSubmitting}
+                                    />
+                                </div>
+                                
+                                <Separator />
+                                
+                                <h3 className="text-sm font-medium text-muted-foreground pt-2">Per-Product Rules</h3>
 
                                 <div className="space-y-2">
                                     <Label htmlFor="product-select">Select Product</Label>
@@ -242,7 +278,7 @@ export default function UserProductControlManager({ initialRules, initialHasMore
                     <CardFooter>
                        <Button type="submit" disabled={!foundUser || !selectedProduct || isSubmitting}>
                          {isSubmitting && <Loader2 className="animate-spin mr-2" />}
-                         Save Rule
+                         Save Product Rule
                        </Button>
                     </CardFooter>
                 </form>

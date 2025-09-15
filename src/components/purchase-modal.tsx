@@ -265,7 +265,7 @@ export default function PurchaseModal({ product, user: initialUser, onClose }: P
                    <Button onClick={handleBuyWithUpi} className="w-full font-sans" disabled={isLoading}>
                     {isLoading ? <Loader2 className="animate-spin" /> : `Pay ₹${finalPrice} via UPI`}
                     </Button>
-                    {!product.onlyUpi && (
+                    {!product.onlyUpi && !user.isRedeemDisabled && (
                          <Dialog>
                             <DialogTrigger asChild>
                                 <Button className="w-full font-sans" variant="secondary" disabled={isLoading}>
@@ -336,7 +336,8 @@ export default function PurchaseModal({ product, user: initialUser, onClose }: P
                                     src={paymentDetails.qrImageUrl}
                                     alt="UPI QR Code"
                                     layout="fill"
-                                    className="object-cover"
+                                    className="object-cover object-center scale-[1.6]"
+                                    style={{ objectPosition: 'center 52%' }}
                                 />
                             </div>
                         )}

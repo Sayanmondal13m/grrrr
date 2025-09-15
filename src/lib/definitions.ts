@@ -29,6 +29,7 @@ export interface User {
     visits?: Date[];
     isHidden?: boolean; // Flag to hide user from admin list
     fcmToken?: string; // Firebase Cloud Messaging token
+    isRedeemDisabled?: boolean; // If true, user cannot use redeem codes
 }
 
 
