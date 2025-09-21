@@ -3,6 +3,7 @@
 
 import { connectToDatabase } from '@/lib/mongodb';
 import { type User, type Order, type Notification, type AiLog, type UserProductControl, type VisualIdPromotionLog } from '@/lib/definitions';
+import { ObjectId } from 'mongodb';
 
 /**
  * Handles the promotion of a user's visualGamingId to their real gamingId.
@@ -51,7 +52,7 @@ export async function promoteVisualId(user: User): Promise<void> {
       await db.collection('visual_id_promotions').insertOne(promotionLog as VisualIdPromotionLog, { session });
       
       // 4. Permanently delete the old user document.
-      const deleteResult = await db.collection<User>('users').deleteOne({ _id: user._id }, { session });
+      const deleteResult = await db.collection<User>('users').deleteOne({ gamingId: oldGamingId }, { session });
       if (deleteResult.deletedCount === 0) {
         throw new Error(`Failed to delete the old user document for ID: ${oldGamingId}`);
       }
