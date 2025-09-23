@@ -11,7 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { Label } from './ui/label';
 import { Input } from './ui/input';
 import { useToast } from '@/hooks/use-toast';
-import { transferCoins, setGiftPassword, getGiftHistoryForUser } from '@/app/actions';
+import { transferCoins, setGiftPassword, getGiftHistoryForUser, getUserData } from '@/app/actions';
 import { useFormStatus } from 'react-dom';
 import GamingIdModal from './gaming-id-modal';
 import { Button } from './ui/button';
@@ -66,7 +66,8 @@ const initialState = { success: false, message: '' };
 
 type View = 'transfer' | 'setPassword';
 
-export default function CoinSystem({ user }: CoinSystemProps) {
+export default function CoinSystem({ user: initialUser }: CoinSystemProps) {
+  const [currentUser, setCurrentUser] = useState(initialUser);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isRegisterModalOpen, setIsRegisterModalOpen] = useState(false);
   const [hasModalBeenDismissed, setHasModalBeenDismissed] = useState(false);
@@ -80,19 +81,28 @@ export default function CoinSystem({ user }: CoinSystemProps) {
   const [transferState, transferFormAction] = useActionState(transferCoins, initialState);
   
   useEffect(() => {
-    if (user?.giftPassword) {
+    const interval = setInterval(async () => {
+      const updatedUser = await getUserData();
+      setCurrentUser(updatedUser);
+    }, 3000); // Poll every 3 seconds
+
+    return () => clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
+    if (currentUser?.giftPassword) {
       setView('transfer');
     } else {
       setView('setPassword');
     }
-  }, [user, isModalOpen]);
+  }, [currentUser, isModalOpen]);
 
   useEffect(() => {
-    if (!user && !hasModalBeenDismissed) {
+    if (!currentUser && !hasModalBeenDismissed) {
       const timer = setTimeout(() => setIsRegisterModalOpen(true), 1500); 
       return () => clearTimeout(timer);
     }
-  }, [user, hasModalBeenDismissed]);
+  }, [currentUser, hasModalBeenDismissed]);
   
   useEffect(() => {
     if (setPasswordState.message) {
@@ -121,7 +131,7 @@ export default function CoinSystem({ user }: CoinSystemProps) {
   }, [transferState, toast]);
 
   const handleUnregisteredClick = (e: React.MouseEvent) => {
-    if (!user) {
+    if (!currentUser) {
         e.preventDefault();
         setIsRegisterModalOpen(true);
     }
@@ -129,7 +139,7 @@ export default function CoinSystem({ user }: CoinSystemProps) {
 
   const handleModalOpenChange = (isOpen: boolean) => {
     setIsRegisterModalOpen(isOpen);
-    if (!isOpen && !user) {
+    if (!isOpen && !currentUser) {
       setHasModalBeenDismissed(true);
     }
   };
@@ -145,7 +155,7 @@ export default function CoinSystem({ user }: CoinSystemProps) {
   const renderSetPasswordView = () => (
      <form action={setPasswordFormAction}>
         <DialogHeader>
-            <DialogTitle className="flex items-center gap-2"><KeyRound /> {user?.giftPassword ? 'Reset' : 'Set'} Your Gift Password</DialogTitle>
+            <DialogTitle className="flex items-center gap-2"><KeyRound /> {currentUser?.giftPassword ? 'Reset' : 'Set'} Your Gift Password</DialogTitle>
             <DialogDescription>Create a secure password to protect your coin transfers. You will need this password every time you send coins to another player.</DialogDescription>
         </DialogHeader>
         <div className="py-4 space-y-4">
@@ -166,7 +176,7 @@ export default function CoinSystem({ user }: CoinSystemProps) {
         <DialogHeader>
             <DialogTitle>Transfer Coins</DialogTitle>
             <DialogDescription>
-                Send coins to another user. This action is irreversible. Your current balance is {user?.coins}.
+                Send coins to another user. This action is irreversible. Your current balance is {currentUser?.coins}.
             </DialogDescription>
         </DialogHeader>
         <div className="space-y-4 py-4">
@@ -176,7 +186,7 @@ export default function CoinSystem({ user }: CoinSystemProps) {
             </div>
             <div className="space-y-2">
                 <Label htmlFor="amount">Amount</Label>
-                <Input id="amount" name="amount" type="number" required min="1" max={user?.coins} />
+                <Input id="amount" name="amount" type="number" required min="1" max={currentUser?.coins} />
             </div>
             <div className="space-y-2">
                 <Label htmlFor="transfer-gift-password">Your Gift Password</Label>
@@ -189,7 +199,7 @@ export default function CoinSystem({ user }: CoinSystemProps) {
                     {isHistoryLoading ? <Loader2 className="animate-spin"/> : <History/>}
                     History
                 </Button>
-                {user?.canSetGiftPassword && (
+                {currentUser?.canSetGiftPassword && (
                     <Button variant="outline" type="button" onClick={() => setView('setPassword')} className="gap-2">
                         <RefreshCw /> Reset Password
                     </Button>
@@ -224,14 +234,14 @@ export default function CoinSystem({ user }: CoinSystemProps) {
   
 
   const renderModalContent = () => {
-    if (!user) return null;
+    if (!currentUser) return null;
 
     if (view === 'setPassword') {
-        return user.canSetGiftPassword ? renderSetPasswordView() : renderEligibilityCheckView();
+        return currentUser.canSetGiftPassword ? renderSetPasswordView() : renderEligibilityCheckView();
     }
     
     if (view === 'transfer') {
-        return user.giftPassword ? renderTransferView() : renderEligibilityCheckView();
+        return currentUser.giftPassword ? renderTransferView() : renderEligibilityCheckView();
     }
     
     return null;
@@ -291,17 +301,17 @@ export default function CoinSystem({ user }: CoinSystemProps) {
             </Link>
             
             <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-                <div onClick={(e) => { handleUnregisteredClick(e); if (user) setIsModalOpen(true); }} className="flex-1 max-w-[100px] sm:max-w-[120px] cursor-pointer">
+                <div onClick={(e) => { handleUnregisteredClick(e); if (currentUser) setIsModalOpen(true); }} className="flex-1 max-w-[100px] sm:max-w-[120px] cursor-pointer">
                     <Card className="hover:bg-primary/5 transition-colors h-full">
                     <CardContent className="p-2 flex flex-col items-center justify-center text-center min-h-[60px] w-[100px] sm:w-[120px]">
                         <Coins className="w-5 h-5 mx-auto text-amber-500" />
-                        <p className="font-semibold mt-1 text-xs">{user ? `${user.coins} Coins` : "0 Coins"}</p>
+                        <p className="font-semibold mt-1 text-xs">{currentUser ? `${currentUser.coins} Coins` : "0 Coins"}</p>
                         <p className="text-xs text-muted-foreground">&nbsp;</p>
                     </CardContent>
                     </Card>
                 </div>
 
-              {user && (
+              {currentUser && (
                   <DialogContent>
                     {renderModalContent()}
                   </DialogContent>
