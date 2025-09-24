@@ -93,7 +93,7 @@ export default function NotificationBell({ notifications: initialNotifications, 
           <div className="space-y-4">
             {currentNotifications.map((notification) => (
               <div key={notification._id.toString()} className="p-4 rounded-lg border bg-card text-card-foreground shadow-sm">
-                <p className="text-sm mb-2">{notification.message}</p>
+                <p className="text-sm mb-2 font-sans">{notification.message}</p>
                 {notification.imageUrl && (
                   <div className="relative aspect-video w-full mb-2">
                     <Image src={notification.imageUrl} alt="Notification Image" layout="fill" className="rounded-md object-cover" />
