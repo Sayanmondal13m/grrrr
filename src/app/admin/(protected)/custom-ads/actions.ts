@@ -8,6 +8,7 @@ import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 import { unstable_noStore as noStore } from 'next/cache';
 import { ObjectId } from 'mongodb';
+import { getLockedAd, setAdLock } from '@/lib/ad-locker';
 
 const adSchema = z.object({
     adId: z.string().optional(),
@@ -31,13 +32,25 @@ const adSchema = z.object({
 
 export async function getRandomAd(): Promise<CustomAd | null> {
     noStore();
+    
+    // Check for a locked ad first.
+    const lockedAd = getLockedAd();
+    if (lockedAd) {
+        return lockedAd;
+    }
+
     try {
         const db = await connectToDatabase();
         const ads = await db.collection<CustomAd>('custom_ads').aggregate([{ $sample: { size: 1 } }]).toArray();
 
         if (ads.length === 0) return null;
         
-        return JSON.parse(JSON.stringify(ads[0]));
+        const randomAd = JSON.parse(JSON.stringify(ads[0]));
+        
+        // Lock the newly fetched ad for the user.
+        setAdLock(randomAd);
+        
+        return randomAd;
 
     } catch (error) {
         console.error('Error fetching random ad:', error);
