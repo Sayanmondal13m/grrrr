@@ -1,178 +1,183 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { rewardAdCoins } from '@/app/actions';
+import { rewardAdCoins, getUserData } from '@/app/actions';
+import { getActiveAd } from '../admin/(protected)/custom-ads/actions';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, PartyPopper } from 'lucide-react';
-import { FC, useRef } from 'react';
+import { Loader2, X, Volume2, VolumeX, SkipForward } from 'lucide-react';
+import type { CustomAd, User } from '@/lib/definitions';
+import { Button } from '@/components/ui/button';
+import { Progress } from '@/components/ui/progress';
+import { cn } from '@/lib/utils';
+import GamingIdModal from '@/components/gaming-id-modal';
 
-/* ---------- Adsterra Unit ---------- */
-interface AdUnitProps {
-  adKey: string;
-  height: number;
-  width: number;
-  className?: string;
-}
 
-const AdUnit: FC<AdUnitProps> = ({ adKey, height, width, className = '' }) => {
-  const adContainerRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (!adContainerRef.current) return;
-    adContainerRef.current.innerHTML = '';
-
-    const adElement = document.createElement('div');
-    const optionsScript = document.createElement('script');
-    optionsScript.type = 'text/javascript';
-    optionsScript.innerHTML = `
-      atOptions = {
-        'key' : '${adKey}',
-        'format' : 'iframe',
-        'height' : ${height},
-        'width' : ${width},
-        'params' : {}
-      };
-    `;
-    const invokeScript = document.createElement('script');
-    invokeScript.type = 'text/javascript';
-    invokeScript.src = `//www.highperformanceformat.com/${adKey}/invoke.js`;
-
-    adElement.appendChild(optionsScript);
-    adElement.appendChild(invokeScript);
-    adContainerRef.current.appendChild(adElement);
-
-    return () => {
-      if (adContainerRef.current) adContainerRef.current.innerHTML = '';
-    };
-  }, [adKey, height, width]);
-
-  return (
-    <div
-      ref={adContainerRef}
-      className={className}
-      style={{ minWidth: `${width}px`, minHeight: `${height}px` }}
-    ></div>
-  );
-};
-
-/* ---------- Revenue Banner ---------- */
-interface BannerAdUnitProps {
-  adSrc: string;
-  containerId: string;
-  className?: string;
-}
-
-const BannerAdUnit: FC<BannerAdUnitProps> = ({ adSrc, containerId, className = '' }) => {
-  const adContainerRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (!adContainerRef.current) return;
-    adContainerRef.current.innerHTML = '';
-
-    const containerDiv = document.createElement('div');
-    containerDiv.id = containerId;
-
-    const invokeScript = document.createElement('script');
-    invokeScript.async = true;
-    invokeScript.setAttribute('data-cfasync', 'false');
-    invokeScript.src = adSrc;
-
-    adContainerRef.current.appendChild(invokeScript);
-    adContainerRef.current.appendChild(containerDiv);
-
-    return () => {
-      if (adContainerRef.current) adContainerRef.current.innerHTML = '';
-    };
-  }, [adSrc, containerId]);
-
-  return <div ref={adContainerRef} className={className}></div>;
-};
-
-/* ---------- Main Page ---------- */
 export default function WatchAdPage() {
-  const [countdown, setCountdown] = useState(30);
-  const [isComplete, setIsComplete] = useState(false);
+  const [ad, setAd] = useState<CustomAd | null>(null);
+  const [user, setUser] = useState<User | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isRegisterModalOpen, setIsRegisterModalOpen] = useState(false);
+  
+  const [progress, setProgress] = useState(0);
+  const [timeElapsed, setTimeElapsed] = useState(0);
+  const [isMuted, setIsMuted] = useState(true);
+  const [isRewardGranted, setIsRewardGranted] = useState(false);
+  const [showCta, setShowCta] = useState(false);
+  
+  const videoRef = useRef<HTMLVideoElement>(null);
   const router = useRouter();
   const { toast } = useToast();
+  const hasGrantedReward = useRef(false);
 
+  // Fetch ad and user data on mount
   useEffect(() => {
-    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
-      if (!isComplete) {
-        e.preventDefault();
-        e.returnValue = '';
+    async function fetchData() {
+      const [adData, userData] = await Promise.all([getActiveAd(), getUserData()]);
+      
+      if (!userData) {
+        setIsRegisterModalOpen(true);
+        setIsLoading(false);
+        return;
       }
-    };
-    window.addEventListener('beforeunload', handleBeforeUnload);
-    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
-  }, [isComplete]);
+      setUser(userData);
 
-  useEffect(() => {
-    if (countdown > 0) {
-      const timer = setTimeout(() => setCountdown(countdown - 1), 1000);
-      return () => clearTimeout(timer);
-    } else if (!isComplete) {
-      setIsComplete(true);
-      rewardAdCoins().then((result) => {
-        if (result.success) {
-          toast({
-            title: 'Success!',
-            description: result.message || "You've earned 5 coins!",
-            duration: 5000,
-          });
-        } else {
-          toast({
-            variant: 'destructive',
-            title: 'Error',
-            description: result.message || 'Could not process reward.',
-            duration: 5000,
-          });
-        }
-        setTimeout(() => router.push('/'), 3000);
-      });
+      if (adData) {
+        setAd(adData);
+      }
+      setIsLoading(false);
     }
-  }, [countdown, isComplete, router, toast]);
+    fetchData();
+  }, []);
+
+  // Main timer and progress effect
+  useEffect(() => {
+    if (!ad || isLoading) return;
+
+    const timer = setInterval(() => {
+      setTimeElapsed(prev => {
+        const newTime = prev + 1;
+        
+        // Update progress
+        setProgress((newTime / ad.totalDuration) * 100);
+        
+        // Show CTA button
+        if (newTime >= 3) {
+          setShowCta(true);
+        }
+
+        // Grant reward
+        if (newTime >= ad.rewardTime && !hasGrantedReward.current) {
+          hasGrantedReward.current = true;
+          rewardAdCoins().then(result => {
+            if (result.success) {
+              toast({
+                title: 'Success!',
+                description: result.message || "You've earned 5 coins!",
+              });
+            }
+          });
+          setIsRewardGranted(true);
+        }
+        
+        // End of ad
+        if (newTime >= ad.totalDuration) {
+          clearInterval(timer);
+          router.push('/');
+        }
+        
+        return newTime;
+      });
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [ad, isLoading, router, toast]);
+
+  const handleCtaClick = () => {
+    if (ad) {
+      window.open(ad.ctaLink, '_blank');
+    }
+  };
+  
+  const handleSkip = () => {
+    router.push('/');
+  }
+
+  const renderContent = () => {
+    if (isLoading) {
+      return (
+        <div className="flex items-center justify-center h-full">
+          <Loader2 className="w-16 h-16 text-white animate-spin" />
+        </div>
+      );
+    }
+    
+    if (!ad) {
+        return (
+             <div className="flex flex-col items-center justify-center h-full text-center text-white">
+                <h1 className="text-2xl font-bold">No Active Ad</h1>
+                <p className="text-lg mt-2">There is no ad available to watch right now. Please check back later.</p>
+                <Button onClick={() => router.push('/')} className="mt-6">Go Back Home</Button>
+            </div>
+        )
+    }
+
+    const buttonShapeClass = {
+        pill: 'rounded-full',
+        rounded: 'rounded-lg',
+        square: 'rounded-none'
+    };
+
+    return (
+      <div className="relative w-full h-full">
+        <video
+          ref={videoRef}
+          src={ad.videoUrl}
+          autoPlay
+          playsInline
+          muted={isMuted}
+          className="w-full h-full object-cover"
+          onCanPlay={() => videoRef.current?.play().catch(() => setIsMuted(true))}
+        />
+        
+        {/* Overlay & UI */}
+        <div className="absolute inset-0 bg-black/30 flex flex-col justify-between p-4">
+          {/* Top Bar */}
+          <div className="flex justify-between items-center">
+            <Progress value={progress} className="w-full h-1.5" />
+            <Button onClick={() => setIsMuted(!isMuted)} variant="ghost" size="icon" className="text-white ml-4">
+              {isMuted ? <VolumeX /> : <Volume2 />}
+            </Button>
+          </div>
+          
+          {/* Bottom Bar */}
+          <div className="flex flex-col items-center gap-4 transition-all duration-500" style={{ opacity: showCta ? 1 : 0, transform: showCta ? 'translateY(0)' : 'translateY(20px)'}}>
+            {isRewardGranted && (
+                 <Button onClick={handleSkip} variant="secondary" className="bg-white/80 hover:bg-white text-black backdrop-blur-sm rounded-full">
+                    <SkipForward className="mr-2"/>
+                    Skip Ad
+                </Button>
+            )}
+            <Button 
+                onClick={handleCtaClick}
+                variant={ad.ctaColor}
+                size="lg"
+                className={cn("text-lg h-12 px-8 font-bold", buttonShapeClass[ad.ctaShape])}
+            >
+              {ad.ctaText}
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  };
 
   return (
-    <div className="flex flex-col items-center justify-start min-h-screen bg-white text-gray-800 p-4 space-y-6">
-      
-      {/* Adsterra Above Countdown */}
-      <AdUnit
-        adKey="d03db8034121e832dbc841f6b4b0fb1c"
-        height={60}
-        width={468}
-      />
-
-      {/* Countdown Section */}
-      <div className="text-center space-y-6 my-4">
-        {isComplete ? (
-          <div className="space-y-4">
-            <PartyPopper className="w-24 h-24 text-yellow-400 mx-auto animate-bounce" />
-            <h1 className="text-4xl font-bold">Ad Finished!</h1>
-            <p className="text-lg">You've earned your reward!</p>
-            <p className="text-sm text-gray-500">Redirecting you back to the homepage...</p>
-          </div>
-        ) : (
-          <div className="space-y-6">
-            <div className="relative w-28 h-28 mx-auto">
-              <Loader2 className="w-28 h-28 text-blue-600 animate-spin" />
-              <span className="absolute inset-0 flex items-center justify-center text-4xl font-bold">
-                {countdown}
-              </span>
-            </div>
-            <h1 className="text-3xl font-bold tracking-wider">Your Ad Is Playing...</h1>
-            <p className="text-gray-600 max-w-sm">
-              Please wait for the countdown to finish to receive your reward. Do not close or refresh this page.
-            </p>
-          </div>
-        )}
-      </div>
-
-      {/* Revenue Ad Below Countdown */}
-      <BannerAdUnit
-        adSrc="//pl27351902.revenuecpmgate.com/d990b9916919f0f255fc4e310f7c9793/invoke.js"
-        containerId="container-d990b9916919f0f255fc4e310f7c9793"
-      />
-    </div>
+     <>
+        <GamingIdModal isOpen={isRegisterModalOpen} onOpenChange={setIsRegisterModalOpen} />
+        <div className="flex flex-col items-center justify-center min-h-screen bg-black w-full h-full">
+           {renderContent()}
+        </div>
+     </>
   );
 }

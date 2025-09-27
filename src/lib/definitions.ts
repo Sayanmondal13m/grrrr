@@ -151,3 +151,17 @@ export interface PreSeededLoginHistory {
     timestamp: Date;
   };
 }
+
+export interface CustomAd {
+  _id: ObjectId;
+  videoUrl: string;
+  ctaText: string;
+  ctaLink: string;
+  ctaShape: 'pill' | 'rounded' | 'square';
+  ctaColor: 'primary' | 'destructive' | 'outline';
+  totalDuration: number; // in seconds
+  rewardTime: number; // in seconds, must be <= totalDuration
+  isActive: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+}
