@@ -155,7 +155,6 @@ export default function WatchAdPage() {
       grey: 'bg-gray-500 text-white hover:bg-gray-600',
     }
 
-    const progress = (timeElapsed / ad.totalDuration) * 100;
     const showSkipButton = isRewardGranted && ad.rewardTime && ad.rewardTime < ad.totalDuration;
 
     return (
@@ -163,7 +162,12 @@ export default function WatchAdPage() {
         <div 
           className="absolute top-0 left-0 right-0 p-4 z-10 flex items-center gap-4 bg-gradient-to-b from-black/50 to-transparent"
         >
-          <Progress value={progress} className="w-full h-1" />
+          <div className="w-full bg-white/20 rounded-full h-1 overflow-hidden">
+            <div
+              className="bg-white h-1 rounded-full animate-progress-smooth"
+              style={{ '--duration': `${ad.totalDuration}s` } as React.CSSProperties}
+            ></div>
+          </div>
           <div className="flex items-center gap-2">
             <Button onClick={() => setIsMuted(!isMuted)} variant="ghost" size="icon" className="text-white">
               {isMuted ? <VolumeX /> : <Volume2 />}
@@ -188,13 +192,12 @@ export default function WatchAdPage() {
               playsInline
               muted={isMuted}
               className="w-full h-full object-cover"
-              loop // Loop the video if it's shorter than the total duration
             />
         </div>
         
         {!ad.hideCtaButton && (
-             <div className="fixed bottom-20 left-0 right-0 flex justify-center pointer-events-auto">
-              <div className={cn("transition-opacity duration-500", showCta ? 'animate-in fade-in-0 slide-in-from-bottom-10 duration-700' : 'opacity-0')}>
+             <div className="fixed bottom-20 w-full flex justify-center">
+              <div className={cn("transition-all duration-700", showCta ? 'animate-slide-in-up' : 'opacity-0')}>
                 <Button 
                     onClick={handleCtaClick}
                     size="lg"
