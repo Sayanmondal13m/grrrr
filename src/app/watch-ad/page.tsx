@@ -22,7 +22,7 @@ export default function WatchAdPage() {
   
   const [progress, setProgress] = useState(0);
   const [timeElapsed, setTimeElapsed] = useState(0);
-  const [isMuted, setIsMuted] = useState(true);
+  const [isMuted, setIsMuted] = useState(false);
   const [isRewardGranted, setIsRewardGranted] = useState(false);
   const [showCta, setShowCta] = useState(false);
   
@@ -149,7 +149,7 @@ export default function WatchAdPage() {
       <div className="relative w-full h-full">
         <div 
           className="w-full h-full cursor-pointer"
-          onClick={ad.hideCtaButton ? handleCtaClick : undefined}
+          onClick={handleCtaClick}
         >
             <video
             ref={videoRef}
