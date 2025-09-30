@@ -185,8 +185,8 @@ export default function RootLayout({
         <BrowserRedirect />
         <RefreshProvider>
           {isLoading && <LoadingScreen />}
-          <div className={cn('flex flex-col flex-1', (isAdPage || isLoading) && 'h-screen')}>
-            {!isAdPage && !isLoading && (
+          <div className={cn('flex flex-col flex-1', isAdPage && 'h-screen')}>
+            {!isAdPage && (
               <Header 
                 user={user} 
                 notifications={standardNotifications} 
@@ -194,8 +194,8 @@ export default function RootLayout({
                 onNotificationRefresh={handleNotificationRefresh}
               />
             )}
-            <main className={cn('flex-grow', (isAdPage || isLoading) && 'h-full')}>{isLoading ? null : childrenWithProps}</main>
-            {!isAdPage && !isLoading && <Footer />}
+            <main className={cn('flex-grow', isAdPage && 'h-full')}>{childrenWithProps}</main>
+            {!isAdPage && <Footer />}
           </div>
           <Toaster />
           {popupNotifications.length > 0 && (
