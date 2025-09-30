@@ -439,7 +439,7 @@ export default function PurchaseModal({ product, user: initialUser, onClose }: P
                 <p className="text-muted-foreground mb-4">Congratulations! Your purchase has been processed.</p>
                 <p className="text-sm">You can check your <Button asChild variant="link" className="p-0"><Link href="/order">Order Page</Link></Button> for the delivery status.</p>
                 <div className="w-full bg-gray-200 rounded-full h-1 mt-6 overflow-hidden">
-                    <div className="bg-green-500 h-1 rounded-full animate-[progress_5s_linear_forwards]" style={{'--final-width': '100%'} as any}></div>
+                    <div className="bg-green-500 h-1 rounded-full animate-progress-smooth" style={{'--duration': '5s'} as React.CSSProperties}></div>
                 </div>
             </div>
         );

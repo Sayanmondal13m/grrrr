@@ -106,7 +106,7 @@ export default {
       animation: {
         'accordion-down': 'accordion-down 0.2s ease-out',
         'accordion-up': 'accordion-up 0.2s ease-out',
-        'progress-smooth': 'progress-smooth linear forwards',
+        'progress-smooth': 'progress-smooth var(--duration, 30s) linear forwards',
         'slide-in-up': 'slide-in-up 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards',
       },
     },
