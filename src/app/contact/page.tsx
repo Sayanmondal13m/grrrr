@@ -23,8 +23,8 @@ export default function ContactPage() {
               </CardHeader>
               <CardContent>
                 <p className="text-muted-foreground">For any support queries, please email us. We aim to respond within 24 hours.</p>
-                <a href="mailto:support@garenagears.com" className="text-primary font-semibold text-lg mt-2 inline-block hover:underline">
-                  support@garenagears.com
+                <a href="mailto:garenaffmaxstore@gmail.com" className="text-primary font-semibold text-lg mt-2 inline-block hover:underline">
+                  garenaffmaxstore@gmail.com
                 </a>
               </CardContent>
             </Card>

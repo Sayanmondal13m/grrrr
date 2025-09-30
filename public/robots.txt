@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://freefire-max-garena.vercel.app/sitemap.xml
+Sitemap: https://www.garenafreefire.store/sitemap.xml

@@ -9,14 +9,14 @@ import ProductList from '@/components/product-list';
 
 
 export const metadata: Metadata = {
-  metadataBase: new URL('https://freefire-max-garena.vercel.app'),
-  title: 'Garena Gears - Free Fire Top-Up & Diamonds',
+  metadataBase: new URL('https://www.garenafreefire.store'),
+  title: 'Garena Store - Free Fire Top-Up & Diamonds',
   description: 'The official, secure, and trusted Garena store for discounted Free Fire diamonds, memberships, and top-ups. Get unbeatable prices on in-game items for Free Fire MAX.',
   keywords: [
-    'Free Fire top up', 'Free Fire MAX top up', 'Garena', 'Free Fire diamonds', 'top-up', 'in-game items', 'Garena Gears', 'buy Free Fire diamonds', 'Free Fire recharge', 'Garena top up center', 'Free Fire membership', 'cheap Free Fire diamonds', 'how to top up Free Fire', 'Garena Free Fire', 'diamonds for Free Fire', 'game top up', 'Free Fire redeem code', 'Garena topup', 'FF top up',
+    'Free Fire top up', 'Free Fire MAX top up', 'Garena', 'Free Fire diamonds', 'top-up', 'garena free fire store', 'Garena free fire store', 'garenaff store', 'garenaff', 'in-game items', 'Garena Gears', 'buy Free Fire diamonds', 'Free Fire recharge', 'Garena top up center', 'Free Fire membership', 'cheap Free Fire diamonds', 'how to top up Free Fire', 'Garena Free Fire', 'diamonds for Free Fire', 'game top up', 'Free Fire redeem code', 'Garena topup', 'FF top up',
   ],
   openGraph: {
-    title: 'Garena Gears - Free Fire Top-Up & Diamonds',
+    title: 'Garena Store - Free Fire Top-Up & Diamonds',
     description: 'The official, secure, and trusted Garena store for discounted Free Fire diamonds and top-ups.',
     images: '/img/slider1.png'
   }
