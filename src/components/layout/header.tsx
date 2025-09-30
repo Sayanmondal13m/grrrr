@@ -40,7 +40,7 @@ export default function Header({ user, notifications, notificationKey, onNotific
         title: "Logged Out",
         description: "You have been successfully logged out.",
       });
-      router.refresh();
+      window.location.reload();
     } else {
       toast({
         variant: "destructive",
