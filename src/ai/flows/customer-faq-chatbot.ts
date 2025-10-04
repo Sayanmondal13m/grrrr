@@ -49,7 +49,7 @@ const prompt = ai.definePrompt({
   Why Choose Us?
   - Official & Trusted: As the official website of Garena, we guarantee that every transaction is secure and every item is legitimate. Your account's safety is our top priority.
   - Global Access: We cater to players from all corners of the world.
-  - Flexible Payment Options: We offer multiple ways to top up. Pay directly for instant delivery of items to your game account, or use a redeem code for great value. Please note that redeem code processing can take up to one hour.
+  - Flexible Payment Options: We offer multiple ways to top up. Pay directly for instant delivery of items, or use a redeem code. To use a redeem code, please contact our support team at garenaffmaxstore@gmail.com.
   - Rewarding Referrals: Our referral system rewards you. When you refer someone and they make a purchase, you receive 50% of their top-up amount as a bonus!
 
   ---
@@ -59,7 +59,7 @@ const prompt = ai.definePrompt({
   2.  **Earn Coins by Watching Ads:** On the homepage, you will see a "Watch Ad" box. Click it to watch a short ad. For every ad you watch, you earn 5 coins.
   3.  **Browse and Purchase:** Explore our wide range of items. When you're ready to buy, click the "Buy" button.
   4.  **Use Coins for Discounts:** During checkout, the maximum applicable coins from your balance will be automatically used to give you a discount on the final price.
-  5.  **Complete Your Purchase:** You can pay the final amount using UPI or a redeem code.
+  5.  **Complete Your Purchase:** You can pay the final amount using UPI. If you wish to pay with a redeem code, you must email us at garenaffmaxstore@gmail.com with your Gaming ID and the product you wish to purchase.
   6.  **Track Your Order:** You can see the status of all your purchases on the "Order" page.
 
   ---
@@ -91,7 +91,7 @@ const prompt = ai.definePrompt({
     2. In the popup, confirm your Gaming ID and the final price (after coin discount).
     3. Choose your payment method:
         - **UPI:** Scan the QR code or use a payment app link. After paying, you MUST enter the UTR/Transaction ID to complete the order.
-        - **Redeem Code:** Enter your valid redeem code and submit.
+        - **Redeem Code:** To pay with a redeem code, please contact our support team by emailing garenaffmaxstore@gmail.com. Provide them with your Gaming ID and the item you want to purchase.
     4. Your order will go into "Processing" status. Once verified by our team, it will be marked "Completed".
   - **How to Request a Refund:**
     1. Go to the "Order" page.
@@ -105,7 +105,7 @@ const prompt = ai.definePrompt({
   - Accounts: Users must provide accurate and current information. Users are responsible for safeguarding their passwords.
   - Purchases and Payments:
     - Direct Payment: Items are sent to the game account immediately upon successful transaction.
-    - Redeem Code: This process may take up to one (1) hour to complete. We are not responsible for delays caused by high traffic or technical issues on the game server's end.
+    - Redeem Code: To use a redeem code, you must contact our support team at garenaffmaxstore@gmail.com. Our team will guide you through the process.
   - Refund Policy: Users can request a refund. All requests are subject to review and approval. We reserve the right to deny any request we deem fraudulent or abusive.
   - Referral Program: If a new user signs up with a referral link and completes a top-up, 50% of their first top-up amount is credited to the referrer's account. Garena reserves the right to change or terminate the program.
   
