@@ -1,11 +1,13 @@
+
 import ImageSlider from '@/components/image-slider';
 import FaqChatbot from '@/components/faq-chatbot';
 import { getProducts, getUserData, getOrdersForUser, getUserProductControls } from './actions';
 import { type Metadata } from 'next';
-import { type Product, type User, type Order, type UserProductControl } from '@/lib/definitions';
+import { type Product, type User, type Order, type UserProductControl, type SliderImage } from '@/lib/definitions';
 import CoinSystem from '@/components/coin-system';
 import { ObjectId } from 'mongodb';
 import ProductList from '@/components/product-list';
+import { getSliderImages } from './admin/(protected)/slider-management/actions';
 
 
 export const metadata: Metadata = {
@@ -28,12 +30,14 @@ export default async function Home() {
   const user: User | null = await getUserData();
   const orders: Order[] = user ? await getOrdersForUser() : [];
   const controls: UserProductControl[] = user ? await getUserProductControls(user.gamingId) : [];
+  const sliderImages: SliderImage[] = await getSliderImages();
+
 
   const productsWithStringId = products.map(p => ({...p, _id: p._id.toString()}));
 
   return (
     <div className="flex flex-col">
-      <ImageSlider />
+      <ImageSlider sliderImages={sliderImages} />
       <CoinSystem user={user} />
       <ProductList 
         initialProducts={productsWithStringId} 

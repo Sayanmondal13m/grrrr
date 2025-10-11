@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
@@ -14,28 +15,16 @@ import {
 import Autoplay from 'embla-carousel-autoplay';
 import { cn } from '@/lib/utils';
 import type { SliderImage } from '@/lib/definitions';
-import { getSliderImages } from '@/app/admin/(protected)/slider-management/actions';
 import { Skeleton } from './ui/skeleton';
 
-export default function ImageSlider() {
+interface ImageSliderProps {
+    sliderImages: SliderImage[];
+}
+
+export default function ImageSlider({ sliderImages }: ImageSliderProps) {
   const [api, setApi] = useState<CarouselApi>();
   const [current, setCurrent] = useState(0);
-  const [sliderImages, setSliderImages] = useState<SliderImage[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    async function fetchImages() {
-      try {
-        const images = await getSliderImages();
-        setSliderImages(images);
-      } catch (error) {
-        console.error("Failed to fetch slider images:", error);
-      } finally {
-        setIsLoading(false);
-      }
-    }
-    fetchImages();
-  }, []);
+  const isLoading = false; // Data is now pre-fetched
 
   useEffect(() => {
     if (!api) {
