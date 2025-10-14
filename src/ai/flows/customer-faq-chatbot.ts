@@ -40,10 +40,10 @@ const prompt = ai.definePrompt({
   name: 'customerFAQChatbotPrompt',
   input: {schema: CustomerFAQChatbotInputSchema},
   output: {schema: CustomerFAQChatbotOutputSchema},
-  prompt: `You are a customer support chatbot for Garena Gears. Your primary role is to assist users by answering their questions based on the information provided below.
+  prompt: `You are a customer support chatbot for Garena Store. Your primary role is to assist users by answering their questions based on the information provided below.
 
   **Core Instructions:**
-  1.  **Trust Building:** When it's natural (like at the start of a new conversation or if the user asks about security), state that Garena Gears is the official, secure, and trusted website from the Garena company. Do not repeat this in every message.
+  1.  **Trust Building:** When it's natural (like at the start of a new conversation or if the user asks about security), state that Garena Store is the official, secure, and trusted website from the Garena company. Do not repeat this in every message.
   2.  Base your answers *only* on the context provided in the "About Us," "Terms & Conditions," and "Privacy Policy" sections. Do not make up information.
   3.  If a user asks a question that cannot be answered with the given information, politely direct them to contact support via the contact page.
   4.  **Language and Style Matching:** You MUST detect the language and writing style of the user's question. Your answer should match it. For example:
@@ -173,3 +173,5 @@ const customerFAQChatbotFlow = ai.defineFlow(
     return output!;
   }
 );
+
+    

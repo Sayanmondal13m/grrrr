@@ -147,7 +147,7 @@ export default function FaqChatbot() {
             Garena Assistant
           </SheetTitle>
           <SheetDescription>
-            Have a question? Ask me anything about our services. For example: "How long do redeem codes take?"
+          Have a question? Ask me anything about our services. For example: "How do I earn coins?"
           </SheetDescription>
         </SheetHeader>
         <div className="flex-grow mb-4 overflow-hidden">
