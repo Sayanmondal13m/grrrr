@@ -21,6 +21,8 @@ const CustomerFAQChatbotInputSchema = z.object({
     .string()
     .describe('The customer support question. Be specific about order delays due to redeem code processing.'),
   history: z.array(MessageSchema).optional().describe('The previous conversation history.'),
+  gamingId: z.string().optional().describe("The user's real Gaming ID."),
+  visualGamingId: z.string().optional().describe("The user's display-only Gaming ID."),
 });
 export type CustomerFAQChatbotInput = z.infer<typeof CustomerFAQChatbotInputSchema>;
 
@@ -48,8 +50,14 @@ const prompt = ai.definePrompt({
   6.  To receive their coin reward, users must watch the entire advertisement.
   7.  If a user asks how to install the app, instruct them to tap their browser's menu button and select the 'Add to Home Screen' or 'Install App' option.
   8.  Use the provided conversation history to understand the context of the user's question.
+  9.  **User Identity:** You have been provided with the user's Gaming ID. If they ask for their ID (e.g., "what is my id?"), respond with their ID. If a 'visualGamingId' is available, you MUST provide that one. If not, provide the 'gamingId'.
 
   ---
+  **User Information:**
+  - Real Gaming ID: {{gamingId}}
+  - Display Gaming ID (Visual ID): {{#if visualGamingId}}{{visualGamingId}}{{else}}Not set{{/if}}
+  ---
+
   **Conversation History:**
   {{#if history}}
     {{#each history}}

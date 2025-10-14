@@ -4,6 +4,7 @@
 
 
 
+
 'use server';
 
 import { customerFAQChatbot, type CustomerFAQChatbotInput } from '@/ai/flows/customer-faq-chatbot';
@@ -30,11 +31,19 @@ const key = new TextEncoder().encode(process.env.SESSION_SECRET || 'your-fallbac
 
 
 export async function askQuestion(
-  input: CustomerFAQChatbotInput
+  input: Omit<CustomerFAQChatbotInput, 'gamingId' | 'visualGamingId'>
 ): Promise<{ success: boolean; answer?: string; error?: string }> {
   try {
-    const result = await customerFAQChatbot(input);
-    const gamingId = cookies().get('gaming_id')?.value || 'Guest';
+    const user = await getUserData();
+    const gamingId = user?.gamingId || 'Guest';
+
+    const fullInput: CustomerFAQChatbotInput = {
+      ...input,
+      gamingId: user?.gamingId,
+      visualGamingId: user?.visualGamingId,
+    };
+
+    const result = await customerFAQChatbot(fullInput);
 
     // Log the conversation to the database
     const db = await connectToDatabase();
