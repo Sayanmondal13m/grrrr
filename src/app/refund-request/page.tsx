@@ -1,19 +1,41 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { getUserData } from '@/app/actions';
+import { Loader2 } from 'lucide-react';
 
 export default function RefundRequestPage() {
   const [transactionId, setTransactionId] = useState('');
   const [gamingId, setGamingId] = useState('');
   const [message, setMessage] = useState('');
+  const [isLoadingId, setIsLoadingId] = useState(true);
   const isMobile = useIsMobile();
+
+  useEffect(() => {
+    async function fetchUserId() {
+      setIsLoadingId(true);
+      const user = await getUserData();
+      if (user) {
+        setGamingId(user.visualGamingId || user.gamingId);
+      }
+      setIsLoadingId(false);
+    }
+    fetchUserId();
+  }, []);
+
+  const handleGamingIdChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    // Only allow digits
+    const numericValue = value.replace(/\D/g, '');
+    setGamingId(numericValue);
+  };
 
   const handleSendEmail = () => {
     const recipient = 'garenaffmaxstore@gmail.com';
@@ -50,12 +72,18 @@ ${message}
         <CardContent className="space-y-6">
            <div className="space-y-2">
             <Label htmlFor="gaming-id">Your Gaming ID</Label>
-            <Input
-              id="gaming-id"
-              placeholder="Enter your Gaming ID"
-              value={gamingId}
-              onChange={(e) => setGamingId(e.target.value)}
-            />
+            <div className="relative">
+              <Input
+                id="gaming-id"
+                placeholder="Enter your Gaming ID"
+                value={gamingId}
+                onChange={handleGamingIdChange}
+                type="tel"
+                pattern="[0-9]*"
+                disabled={isLoadingId}
+              />
+              {isLoadingId && <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 animate-spin text-muted-foreground" />}
+            </div>
           </div>
           <div className="space-y-2">
             <Label htmlFor="transaction-id">UTR/Transaction ID or Redeem Code</Label>
