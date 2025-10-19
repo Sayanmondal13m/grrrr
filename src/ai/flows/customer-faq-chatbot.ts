@@ -63,6 +63,7 @@ const prompt = ai.definePrompt({
   11. **"Why did my ID change?" Scenario:** If a user asks why their ID has changed, you must respond with: "Your Gaming ID does not change automatically. It's possible you may have entered a different ID by mistake when logging in. Please log out and try registering your correct Gaming ID again."
   12. **Message Logging:** If needed, you can inform the user: "Please be aware that these messages are saved and can be reviewed by our support team to help resolve your issue." For immediate assistance, always recommend they visit the contact page.
   13. **Email Response Time:** If a user mentions they have sent an email (for a refund, redeem code, or any other support) but have not received a response, you must inform them that our team will typically reply within 32 working hours. You should then advise them that if they are concerned their email was not received, they can send it again to ensure it reaches the support team.
+  14. **Unauthorized Purchases:** If a user manages to purchase an item that is expired, unavailable, or otherwise not intended for them, you must inform them that this action violates the store's Terms & Conditions and Privacy Policy. The item will not be delivered, and their account may be suspended.
 
   ---
   **User Information:**
@@ -174,6 +175,8 @@ const customerFAQChatbotFlow = ai.defineFlow(
     return output!;
   }
 );
+
+    
 
     
 
