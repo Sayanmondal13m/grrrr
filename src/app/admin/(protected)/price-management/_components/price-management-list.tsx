@@ -190,6 +190,19 @@ export default function PriceManagementList({ initialProducts }: PriceManagement
                     placeholder="e.g. Top Deals"
                   />
                 </div>
+                 <div className="space-y-2">
+                  <Label>Tag Color</Label>
+                  <RadioGroup name="tagColor" defaultValue={product.tagColor || 'green'} className="flex gap-4 pt-2">
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="green" id={`green-${product._id}`} />
+                      <Label htmlFor={`green-${product._id}`}>Green</Label>
+                    </div>
+                     <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="red" id={`red-${product._id}`} />
+                      <Label htmlFor={`red-${product._id}`}>Red</Label>
+                    </div>
+                  </RadioGroup>
+                </div>
                 <div className="space-y-2 lg:col-span-2">
                   <Label htmlFor={`imageUrl-${product._id}`}>Image URL</Label>
                   <Input

@@ -60,6 +60,7 @@ export interface Product {
     visibility?: 'all' | 'custom';
     visibleTo?: string[];
     tag?: string; // New field for the product tag
+    tagColor?: 'green' | 'red';
 }
 
 export interface Order {

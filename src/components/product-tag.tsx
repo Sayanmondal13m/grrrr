@@ -5,27 +5,37 @@ import { cn } from '@/lib/utils';
 
 interface ProductTagProps {
   tag: string;
+  color?: 'green' | 'red';
 }
 
-export default function ProductTag({ tag }: ProductTagProps) {
+export default function ProductTag({ tag, color = 'green' }: ProductTagProps) {
   if (!tag) {
     return null;
   }
+  
+  const colorClasses = {
+      green: 'bg-green-600 border-t-green-600',
+      red: 'bg-red-600 border-t-red-600'
+  }
 
   return (
-    <div className="absolute -top-5 -right-4 z-10 drop-shadow-lg" style={{ transform: 'rotate(15deg)' }}>
+    <div className="absolute -top-4 -right-4 z-10 drop-shadow-lg" style={{ transform: 'rotate(4deg)' }}>
         <div 
           className={cn(
-            'relative bg-green-600 text-white',
+            'relative text-white',
             'text-xs font-bold uppercase tracking-wider',
-            'px-2 py-1.5 rounded-lg',
-            'overflow-hidden animate-glowing-ray'
+            'px-2 py-1 rounded-md',
+            'overflow-hidden animate-glowing-ray',
+            colorClasses[color]
           )}
         >
           {tag}
         </div>
-        {/* This creates the tail of the speech bubble */}
-        <div className="absolute top-full right-2 w-0 h-0 border-t-[8px] border-t-green-600 border-l-[8px] border-l-transparent"></div>
+        <div className={cn(
+            "absolute top-full right-4 w-0 h-0 border-l-[15px] border-l-transparent",
+            "border-t-[10px]",
+            colorClasses[color]
+        )}></div>
     </div>
   );
 }

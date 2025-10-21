@@ -7,6 +7,7 @@
 
 
 
+
 'use server';
 
 import { customerFAQChatbot, type CustomerFAQChatbotInput } from '@/ai/flows/customer-faq-chatbot';
@@ -1210,6 +1211,7 @@ const productUpdateSchema = z.object({
   visibility: z.enum(['all', 'custom']),
   visibleTo: z.string().optional(),
   tag: z.string().optional(),
+  tagColor: z.enum(['green', 'red']).optional(),
 }).refine(
     (data) => {
         if (data.isCoinProduct === 'true') {
@@ -1285,6 +1287,7 @@ export async function updateProduct(productId: string, formData: FormData): Prom
         visibility: data.visibility,
         visibleTo: visibleToList,
         tag: data.tag,
+        tagColor: data.tagColor,
     };
 
 
@@ -1341,6 +1344,7 @@ export async function addProduct(isCoinProduct: boolean): Promise<{ success: boo
             oneTimeBuy: false,
             visibility: 'all',
             visibleTo: [],
+            tagColor: 'green',
         };
     } else {
         newProduct = {
@@ -1358,6 +1362,7 @@ export async function addProduct(isCoinProduct: boolean): Promise<{ success: boo
             oneTimeBuy: false,
             visibility: 'all',
             visibleTo: [],
+            tagColor: 'green',
         };
     }
 
