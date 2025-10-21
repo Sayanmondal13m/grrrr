@@ -59,6 +59,7 @@ export interface Product {
     oneTimeBuy?: boolean;
     visibility?: 'all' | 'custom';
     visibleTo?: string[];
+    tag?: string; // New field for the product tag
 }
 
 export interface Order {

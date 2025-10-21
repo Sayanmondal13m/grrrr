@@ -181,6 +181,15 @@ export default function PriceManagementList({ initialProducts }: PriceManagement
                     defaultValue={product.category}
                   />
                 </div>
+                <div className="space-y-2">
+                  <Label htmlFor={`tag-${product._id}`}>Product Tag</Label>
+                  <Input
+                    id={`tag-${product._id}`}
+                    name="tag"
+                    defaultValue={product.tag}
+                    placeholder="e.g. Top Deals"
+                  />
+                </div>
                 <div className="space-y-2 lg:col-span-2">
                   <Label htmlFor={`imageUrl-${product._id}`}>Image URL</Label>
                   <Input

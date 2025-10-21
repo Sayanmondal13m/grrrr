@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import Image from 'next/image';
@@ -18,6 +19,7 @@ import { Ban, Coins, Timer, CheckCircle2, Lock } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { type ObjectId } from 'mongodb';
+import ProductTag from './product-tag';
 
 
 interface ProductCardProps {
@@ -165,7 +167,8 @@ export default function ProductCard({ product, user, orders, control }: ProductC
 
   return (
     <>
-      <Card className="flex flex-col overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
+      <Card className="flex flex-col overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-1 relative">
+        {product.tag && <ProductTag tag={product.tag} />}
         <CardHeader className="p-0">
           <div className="relative aspect-video">
             <Image src={product.imageUrl} alt={product.name} fill className="object-cover" data-ai-hint={product.dataAiHint}/>

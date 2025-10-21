@@ -6,6 +6,7 @@
 
 
 
+
 'use server';
 
 import { customerFAQChatbot, type CustomerFAQChatbotInput } from '@/ai/flows/customer-faq-chatbot';
@@ -1208,6 +1209,7 @@ const productUpdateSchema = z.object({
   coinsApplicable: z.coerce.number().optional(),
   visibility: z.enum(['all', 'custom']),
   visibleTo: z.string().optional(),
+  tag: z.string().optional(),
 }).refine(
     (data) => {
         if (data.isCoinProduct === 'true') {
@@ -1282,6 +1284,7 @@ export async function updateProduct(productId: string, formData: FormData): Prom
         coinsApplicable: isCoinProduct ? 0 : data.coinsApplicable,
         visibility: data.visibility,
         visibleTo: visibleToList,
+        tag: data.tag,
     };
 
 
