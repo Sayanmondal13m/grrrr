@@ -30,7 +30,7 @@ interface ProductCardProps {
 }
 
 const LiveStock = ({ product }: { product: Product }) => {
-    const [stock, setStock] = useState(0);
+    const [displayStock, setDisplayStock] = useState(0);
     const [isMounted, setIsMounted] = useState(false);
 
     useEffect(() => {
@@ -39,17 +39,48 @@ const LiveStock = ({ product }: { product: Product }) => {
             return;
         }
 
-        const calculateCurrentStock = () => {
+        // Set initial stock immediately
+        const initialElapsedSeconds = (new Date().getTime() - new Date(product.liveStockStart).getTime()) / 1000;
+        const initialStockDecreased = Math.floor(initialElapsedSeconds / product.liveStockInterval);
+        const initialTrueStock = Math.max(0, product.liveStock - initialStockDecreased);
+        setDisplayStock(initialTrueStock);
+
+
+        const calculateSmartStock = () => {
             const now = new Date();
             const start = new Date(product.liveStockStart!);
             const elapsedSeconds = (now.getTime() - start.getTime()) / 1000;
             const stockDecreased = Math.floor(elapsedSeconds / product.liveStockInterval!);
-            const currentStock = Math.max(0, product.liveStock! - stockDecreased);
-            setStock(currentStock);
+            const trueStock = Math.max(0, product.liveStock! - stockDecreased);
+
+            setDisplayStock(currentDisplayStock => {
+                // If display is lagging, catch it up quickly.
+                if (currentDisplayStock > trueStock + 5) {
+                    return Math.max(trueStock, currentDisplayStock - Math.floor(Math.random() * 3) - 1);
+                }
+
+                // Never let displayed stock go below true stock
+                if (currentDisplayStock <= trueStock) {
+                    return trueStock;
+                }
+
+                // Random chance to pause, decrease by 1, 2, or 3
+                const randomAction = Math.random();
+                if (randomAction < 0.25) { // 25% chance to pause
+                    return currentDisplayStock;
+                } else if (randomAction < 0.85) { // 60% chance to decrease by 1
+                    return Math.max(trueStock, currentDisplayStock - 1);
+                } else { // 15% chance to decrease by 2 or 3
+                    const dropAmount = Math.random() < 0.7 ? 2 : 3;
+                    return Math.max(trueStock, currentDisplayStock - dropAmount);
+                }
+            });
         };
 
-        calculateCurrentStock();
-        const timer = setInterval(calculateCurrentStock, (product.liveStockInterval || 1) * 1000);
+        calculateSmartStock();
+        // Use a faster interval for smoother, more dynamic updates
+        const updateInterval = Math.min(Math.max(product.liveStockInterval * 1000, 200), 1000);
+        const timer = setInterval(calculateSmartStock, updateInterval);
 
         return () => clearInterval(timer);
     }, [product]);
@@ -58,17 +89,18 @@ const LiveStock = ({ product }: { product: Product }) => {
         return null;
     }
 
-    if (stock <= 0) {
+    if (displayStock <= 0) {
         return <p className="text-sm text-destructive font-bold flex items-center gap-2"><Ban className="w-4 h-4"/> Sold Out!</p>
     }
 
     return (
         <p className="text-sm text-green-600 font-bold flex items-center gap-2">
             <PackageCheck className="w-4 h-4"/>
-            {stock} Available
+            {displayStock} Available
         </p>
     );
 };
+
 
 const CountdownTimer = ({ endDate, isComingSoon }: { endDate: Date; isComingSoon?: boolean }) => {
   const [timeLeft, setTimeLeft] = useState({
@@ -221,7 +253,26 @@ export default function ProductCard({ product, user, orders, control }: ProductC
   return (
     <>
       <div className="relative">
-        {product.tag && <ProductTag tag={product.tag} color={product.tagColor} />}
+        <div className="absolute -top-5 -right-2 z-10 drop-shadow-lg" style={{ transform: 'rotate(4deg)' }}>
+            <div 
+            className={cn(
+                'relative text-white',
+                'text-xs font-bold uppercase tracking-wider',
+                'px-3 py-1 rounded-lg',
+                'overflow-hidden animate-glowing-ray',
+                product.tagColor === 'red' ? 'bg-red-600' : 'bg-green-600'
+            )}
+            >
+            {product.tag}
+            </div>
+            <div className={cn(
+                "absolute top-full right-2 w-0 h-0",
+                "border-l-[10px] border-l-transparent",
+                "border-r-[0px] border-r-transparent",
+                "border-t-[12px]",
+                product.tagColor === 'red' ? 'border-t-red-600' : 'border-t-green-600'
+            )}></div>
+        </div>
         <Card className="flex flex-col overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
           <CardHeader className="p-0">
             <div className="relative aspect-video">
