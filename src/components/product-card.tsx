@@ -20,6 +20,7 @@ import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { type ObjectId } from 'mongodb';
 import ProductTag from './product-tag';
+import ProductMedia from './product-media';
 
 
 interface ProductCardProps {
@@ -286,7 +287,7 @@ export default function ProductCard({ product, user, orders, control }: ProductC
         <Card className="flex flex-col overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
           <CardHeader className="p-0">
             <div className="relative aspect-video">
-              <Image src={product.imageUrl} alt={product.name} fill className="object-cover" data-ai-hint={product.dataAiHint}/>
+              <ProductMedia src={product.imageUrl} alt={product.name} dataAiHint={product.dataAiHint} />
               {product.endDate && <CountdownTimer endDate={new Date(product.endDate)} isComingSoon={product.isComingSoon} />}
             </div>
           </CardHeader>
