@@ -15,7 +15,7 @@ import {
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { markNotificationsAsRead, getNotificationsForUser } from '@/app/actions';
 import type { Notification } from '@/lib/definitions';
-import Image from 'next/image';
+import ProductMedia from '../product-media';
 
 interface NotificationBellProps {
   notifications: Notification[];
@@ -123,8 +123,8 @@ export default function NotificationBell({ notifications: initialNotifications, 
               <div key={notification._id.toString()} className="p-4 rounded-lg border bg-card text-card-foreground shadow-sm">
                 <ClickableMessage message={notification.message} />
                 {notification.imageUrl && (
-                  <div className="relative aspect-video w-full mb-2">
-                    <Image src={notification.imageUrl} alt="Notification Image" layout="fill" className="rounded-md object-cover" />
+                  <div className="relative aspect-video w-full mb-2 rounded-md overflow-hidden">
+                    <ProductMedia src={notification.imageUrl} alt="Notification media" />
                   </div>
                 )}
                 <p className="text-xs text-muted-foreground mt-2">
