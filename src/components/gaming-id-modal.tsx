@@ -117,10 +117,12 @@ Thank you for your consideration.
 
   return (
     <Dialog open={isOpen} onOpenChange={handleOpenChangeWithReset}>
-      <DialogContent className={cn(
-          "sm:max-w-md transition-transform duration-300 ease-in-out",
-          isShifted && "-translate-y-24"
-        )}>
+      <DialogContent
+        className={cn(
+          'sm:max-w-md transition-all duration-300 ease-in-out',
+          isMobile && isShifted && 'top-[25%]'
+        )}
+      >
         {bannedInfo ? (
             <>
                 <DialogHeader>
