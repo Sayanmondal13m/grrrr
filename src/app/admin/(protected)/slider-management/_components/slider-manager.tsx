@@ -9,9 +9,9 @@ import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { addSliderImage, updateSliderImage, deleteSliderImage, getSliderImages } from '../actions';
 import type { SliderImage } from '@/lib/definitions';
-import Image from 'next/image';
 import { Loader2, PlusCircle, Trash2, Edit, Save, X, Image as ImageIcon } from 'lucide-react';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
+import AdminSliderMedia from './admin-slider-media';
 
 
 interface SliderManagerProps {
@@ -109,7 +109,7 @@ export default function SliderManager({ initialImages }: SliderManagerProps) {
                                     <form ref={editFormRef} action={handleUpdateImage} className="space-y-4">
                                         <div className="flex items-center gap-4">
                                              <div className="relative w-32 h-16 rounded-md overflow-hidden shrink-0">
-                                                <Image src={image.imageUrl} alt="Slider image" layout="fill" className="object-cover" />
+                                                <AdminSliderMedia src={image.imageUrl} alt="Slider image" />
                                             </div>
                                             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 flex-grow">
                                                 <div className="md:col-span-2 space-y-2">
@@ -131,7 +131,7 @@ export default function SliderManager({ initialImages }: SliderManagerProps) {
                                     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                                         <div className="flex items-center gap-4">
                                             <div className="relative w-32 h-16 rounded-md overflow-hidden shrink-0">
-                                                <Image src={image.imageUrl} alt="Slider image" layout="fill" className="object-cover" />
+                                                <AdminSliderMedia src={image.imageUrl} alt="Slider image" />
                                             </div>
                                             <div className="flex-1">
                                                 <p className="font-semibold text-primary truncate text-sm">Order: {image.displayOrder}</p>
