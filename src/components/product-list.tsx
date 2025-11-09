@@ -10,6 +10,7 @@ import { Search } from 'lucide-react';
 import { type ObjectId } from 'mongodb';
 import { getProducts, getUserData, getOrdersForUser, getUserProductControls } from '@/app/actions';
 import { useRefresh } from '@/context/RefreshContext';
+import SecondCardWrapper from './second-card-wrapper';
 
 interface ProductListProps {
     initialProducts: (Product & { _id: string | ObjectId })[];
@@ -148,18 +149,19 @@ export default function ProductList({ initialProducts, initialUser, initialOrder
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 md:gap-8">
-          {filteredAndSortedProducts.map((product) => {
+          {filteredAndSortedProducts.map((product, index) => {
             const productOrders = orders.filter(order => order.productId === product._id.toString());
             const control = user ? controls.find(c => c.productId === product._id.toString() && c.gamingId === user.gamingId) : undefined;
 
             return (
-                <ProductCard
-                  key={product._id.toString()}
-                  product={{...product, _id: product._id.toString()}}
-                  user={user}
-                  orders={productOrders}
-                  control={control}
-                />
+                <SecondCardWrapper key={product._id.toString()} index={index}>
+                    <ProductCard
+                      product={{...product, _id: product._id.toString()}}
+                      user={user}
+                      orders={productOrders}
+                      control={control}
+                    />
+                </SecondCardWrapper>
             )
           })}
         </div>
