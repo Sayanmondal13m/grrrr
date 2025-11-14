@@ -347,10 +347,10 @@ export default function PurchaseModal({ product, user: initialUser, onClose }: P
                             )}
                         </div>
                         {qrCountdown > 0 && !isQrLoading && (
-                           <div className="mt-2 flex items-center justify-center text-sm text-muted-foreground p-2 rounded-lg bg-amber-50 border border-amber-200 w-full">
-                                <Loader2 className="mr-2 h-4 w-4 animate-spin text-amber-500" />
+                           <div className="mt-2 flex items-center justify-center text-sm text-muted-foreground">
+                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                                 <p>Waiting for payment...</p>
-                                <p className="font-mono font-semibold ml-2 text-amber-600">{String(minutes).padStart(2, '0')}:{String(seconds).padStart(2, '0')}</p>
+                                <p className="font-mono font-semibold ml-2">{String(minutes).padStart(2, '0')}:{String(seconds).padStart(2, '0')}</p>
                             </div>
                         )}
                     </div>
