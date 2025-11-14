@@ -338,19 +338,19 @@ export default function PurchaseModal({ product, user: initialUser, onClose }: P
                         <p className="text-4xl font-bold text-primary font-sans">₹{finalPrice}</p>
                     </div>
                     
-                    <div className="p-2 bg-white rounded-lg border w-40 h-40 relative flex items-center justify-center">
-                        {isQrLoading ? (
-                            <Loader2 className="w-10 h-10 animate-spin text-primary" />
-                        ) : (
-                            <>
+                    <div className="flex flex-col items-center gap-2">
+                        <div className="p-2 bg-white rounded-lg border w-40 h-40 relative flex items-center justify-center">
+                            {isQrLoading ? (
+                                <Loader2 className="w-10 h-10 animate-spin text-primary" />
+                            ) : (
                                 <QRCode value={upiUrl} size={144} />
-                                {qrCountdown > 0 && (
-                                    <div className="absolute inset-0 bg-white/90 flex flex-col items-center justify-center text-center">
-                                        <p className="font-mono text-xl font-bold text-destructive">{String(minutes).padStart(2, '0')}:{String(seconds).padStart(2, '0')}</p>
-                                        <p className="text-xs text-muted-foreground">QR expires in</p>
-                                    </div>
-                                )}
-                            </>
+                            )}
+                        </div>
+                        {qrCountdown > 0 && !isQrLoading && (
+                            <div className="text-center">
+                                <p className="text-xs text-muted-foreground">QR expires in</p>
+                                <p className="font-mono text-lg font-bold text-destructive">{String(minutes).padStart(2, '0')}:{String(seconds).padStart(2, '0')}</p>
+                            </div>
                         )}
                     </div>
 
