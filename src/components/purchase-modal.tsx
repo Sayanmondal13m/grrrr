@@ -346,7 +346,7 @@ export default function PurchaseModal({ product, user: initialUser, onClose }: P
                                 <QRCode value={upiUrl} size={144} />
                             )}
                         </div>
-                        {qrCountdown > 0 && !isQrLoading && (
+                        {qrCountdown > 0 && (
                            <div className="mt-2 flex items-center justify-center text-sm text-muted-foreground">
                                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                                 <p>Waiting for payment...</p>
