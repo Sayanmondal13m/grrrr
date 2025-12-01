@@ -355,31 +355,26 @@ export default function PurchaseModal({ product, user: initialUser, onClose }: P
                         )}
                     </div>
 
-                    <div className="w-full border-t pt-4 grid grid-cols-2 gap-3">
-                         <Button asChild variant="outline" className="h-12">
-                            <a href={upiUrl}>
-                                <Image src="/img/gpay.png" alt="Google Pay" width={24} height={24} className="mr-2" />
+                    <div className="w-full border-t pt-4 space-y-3">
+                        <p className="text-xs text-center text-muted-foreground font-medium">Trusted by</p>
+                        <div className="grid grid-cols-4 gap-3">
+                            <div className="flex flex-col items-center justify-center gap-1 text-xs text-muted-foreground">
+                                <Image src="/img/gpay.png" alt="Google Pay" width={24} height={24} />
                                 Google Pay
-                            </a>
-                        </Button>
-                         <Button asChild variant="outline" className="h-12">
-                            <a href={upiUrl}>
-                                <Image src="/img/phonepay.png" alt="PhonePe" width={24} height={24} className="mr-2" />
+                            </div>
+                            <div className="flex flex-col items-center justify-center gap-1 text-xs text-muted-foreground">
+                                <Image src="/img/phonepay.png" alt="PhonePe" width={24} height={24} />
                                 PhonePe
-                            </a>
-                        </Button>
-                        <Button asChild variant="outline" className="h-12">
-                            <a href={upiUrl}>
-                                 <Image src="/img/paytm.png" alt="Paytm" width={24} height={24} className="mr-2" />
+                            </div>
+                            <div className="flex flex-col items-center justify-center gap-1 text-xs text-muted-foreground">
+                                <Image src="/img/paytm.png" alt="Paytm" width={24} height={24} />
                                 Paytm
-                            </a>
-                        </Button>
-                         <Button asChild variant="outline" className="h-12">
-                            <a href={upiUrl}>
-                                <Smartphone className="mr-2" />
+                            </div>
+                            <div className="flex flex-col items-center justify-center gap-1 text-xs text-muted-foreground">
+                                <Smartphone className="w-6 h-6" />
                                 Other UPI
-                            </a>
-                        </Button>
+                            </div>
+                        </div>
                     </div>
                 </div>
                 <div className="text-center text-xs text-muted-foreground flex items-center justify-center gap-1.5">
