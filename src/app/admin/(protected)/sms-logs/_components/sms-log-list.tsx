@@ -89,11 +89,16 @@ export default function SmsLogList({ initialLogs, initialHasMore, totalLogs }: S
                                 </div>
                                 <p className="font-mono bg-background p-2 rounded-md border">{log.body}</p>
                                 <div className="text-xs text-muted-foreground mt-2 flex justify-between">
-                                    <span>Received: <FormattedDate dateString={log.receivedAt} /></span>
+                                    <span>Received: <FormattedDate dateString={log.receivedAt as unknown as string} /></span>
                                     {log.parsedAmount && (
                                         <span>Parsed Amount: <span className="font-bold font-sans text-foreground">₹{log.parsedAmount.toFixed(2)}</span></span>
                                     )}
                                 </div>
+                                {log.status === 'verified' && log.matchedGamingId && (
+                                    <div className="text-xs mt-1 font-semibold text-green-600">
+                                        Verified for Gaming ID: <span className="font-mono">{log.matchedGamingId}</span>
+                                    </div>
+                                )}
                             </div>
                         ))}
                     </div>

@@ -1,13 +1,13 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { connectToDatabase } from '@/lib/mongodb';
-import { PaymentLock, SmsWebhookLog, User, Order, Notification } from '@/lib/definitions';
+import { PaymentLock, SmsWebhookLog, User, Order, Notification, Product } from '@/lib/definitions';
 import { ObjectId } from 'mongodb';
 import { sendPushNotification } from '@/lib/push-notifications';
 
 // --- SMS Parsing Logic ---
 function parseSms(body: string): { amount: number | null, upiRef: string | null } {
-    const amountMatch = body.match(/Rs\.?(\d+\.\d{2})/);
+    const amountMatch = body.match(/Rs\.?\s*(\d+(\.\d{2})?)/);
     const upiRefMatch = body.match(/Ref:(\d+)/);
 
     return {
@@ -24,13 +24,16 @@ async function createOrderFromLock(lock: PaymentLock, smsLogId: ObjectId) {
         let createdOrder: Order | null = null;
         await session.withTransaction(async () => {
             const user = await db.collection<User>('users').findOne({ gamingId: lock.gamingId }, { session });
-            const product = await db.collection('products').findOne({ _id: new ObjectId(lock.productId) });
+            const product = await db.collection<Product>('products').findOne({ _id: new ObjectId(lock.productId) });
 
             if (!user || !product) {
                 throw new Error('User or Product not found for the payment lock.');
             }
 
             const coinsUsed = product.isCoinProduct ? 0 : Math.min(user.coins, product.coinsApplicable || 0);
+
+            // Determine order status based on product type
+            const orderStatus: Order['status'] = product.isCoinProduct ? 'Completed' : 'Processing';
 
             const newOrder: Omit<Order, '_id'> = {
                 userId: user._id.toString(),
@@ -40,7 +43,7 @@ async function createOrderFromLock(lock: PaymentLock, smsLogId: ObjectId) {
                 productPrice: product.price,
                 productImageUrl: product.imageUrl,
                 paymentMethod: 'UPI-Auto',
-                status: 'Completed', 
+                status: orderStatus, 
                 coinsUsed,
                 finalPrice: lock.amount,
                 isCoinProduct: !!product.isCoinProduct,
@@ -50,10 +53,16 @@ async function createOrderFromLock(lock: PaymentLock, smsLogId: ObjectId) {
 
             const orderResult = await db.collection<Order>('orders').insertOne(newOrder as Order, { session });
             createdOrder = { ...newOrder, _id: orderResult.insertedId };
-
-            if (coinsUsed > 0) {
+            
+            // Handle coin logic
+            if (product.isCoinProduct) {
+                // Add coins for coin product purchase
+                await db.collection<User>('users').updateOne({ _id: user._id }, { $inc: { coins: product.quantity } }, { session });
+            } else if (coinsUsed > 0) {
+                // Deduct coins for normal product purchase
                 await db.collection<User>('users').updateOne({ _id: user._id }, { $inc: { coins: -coinsUsed } }, { session });
             }
+
 
             await db.collection<PaymentLock>('payment_locks').updateOne(
                 { _id: lock._id },
@@ -63,11 +72,11 @@ async function createOrderFromLock(lock: PaymentLock, smsLogId: ObjectId) {
 
             await db.collection<SmsWebhookLog>('sms_webhook_logs').updateOne(
                 { _id: smsLogId },
-                { $set: { status: 'verified', matchedPaymentLockId: lock._id } },
+                { $set: { status: 'verified', matchedPaymentLockId: lock._id, matchedGamingId: user.gamingId } },
                 { session }
             );
             
-            const notificationMessage = `Your payment of ₹${lock.amount} for "${lock.productName}" has been successfully received and your order is complete!`;
+            const notificationMessage = `Your payment of ₹${lock.amount} for "${lock.productName}" has been successfully received. You can see the details and track your order here: https://www.garenafreefire.store/order`;
             const newNotification: Omit<Notification, '_id'> = {
                 gamingId: user.gamingId,
                 message: notificationMessage,
@@ -159,3 +168,21 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ success: false, message: 'An internal error occurred.' }, { status: 500 });
   }
 }
+
+// Expire old locks that might have been missed
+async function expireOldLocks() {
+    try {
+        const db = await connectToDatabase();
+        const now = new Date();
+        await db.collection<PaymentLock>('payment_locks').updateMany(
+            { status: 'active', expiresAt: { $lt: now } },
+            { $set: { status: 'expired' } }
+        );
+    } catch (error) {
+        console.error("Error expiring old payment locks:", error);
+    }
+}
+
+// Run the expiration check periodically.
+// This is a simple way to handle it without a dedicated cron job system.
+setInterval(expireOldLocks, 60 * 1000); // Check every minute

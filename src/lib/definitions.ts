@@ -200,4 +200,5 @@ export interface SmsWebhookLog {
     status: 'unprocessed' | 'verified' | 'ignored_no_match' | 'ignored_not_payment' | 'ignored_duplicate';
     matchedPaymentLockId?: ObjectId;
     parsedAmount?: number;
+    matchedGamingId?: string;
 }
