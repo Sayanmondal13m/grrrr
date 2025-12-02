@@ -215,7 +215,7 @@ export default function PurchaseModal({ product, user: initialUser, onClose }: P
                 </DialogHeader>
                 <div className="flex flex-col items-center justify-center text-center space-y-4 py-8">
                     <Loader2 className="w-12 h-12 text-primary animate-spin" />
-                    <p className="text-muted-foreground">Verifying your eligibility...</p>
+                    <p className="text-muted-foreground"></p>
                 </div>
             </>
         );
@@ -416,8 +416,8 @@ export default function PurchaseModal({ product, user: initialUser, onClose }: P
                                 <Image src="/img/mobikwik.png" alt="MobiKwik" width={28} height={28} />
                                 MobiKwik
                             </div>
-                            <div className="flex flex-col items-center justify-start gap-1 text-[10px] text-muted-foreground">
-                                <Image src="/img/upi.png" alt="Other UPI Apps" width={28} height={28} />
+                            <div className="flex flex-col items-center justify-start gap-3 text-[10px] text-muted-foreground">
+                                <Image src="/img/upi.png" alt="Other UPI Apps" width={58} height={58} />
                                 Other Apps
                             </div>
                         </div>
