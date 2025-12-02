@@ -2,7 +2,7 @@
 'use client';
 
 import Link from 'next/link';
-import { Menu, ShoppingCart, LogOut } from 'lucide-react';
+import { Menu, ShoppingCart, LogOut, Home } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Sheet,
@@ -73,6 +73,12 @@ export default function Header({ user, notifications, notificationKey, onNotific
 
           <div className="flex items-center md:hidden">
              {notifications.length > 0 && <NotificationBell key={notificationKey} notifications={notifications} onRefresh={onNotificationRefresh} />}
+            <Button variant="ghost" size="icon" asChild>
+                <Link href="/">
+                    <Home className="h-5 w-5" />
+                    <span className="sr-only">Home</span>
+                </Link>
+            </Button>
             <Button variant="ghost" size="icon" asChild>
               <Link href="/order">
                 <ShoppingCart className="h-5 w-5" />
