@@ -16,6 +16,7 @@
 
 
 
+
 'use server';
 
 import { customerFAQChatbot, type CustomerFAQChatbotInput } from '@/ai/flows/customer-faq-chatbot';
@@ -1584,7 +1585,7 @@ export async function banUser(userId: string, banMessage: string): Promise<{ suc
     
     const result = await db.collection<User>('users').updateOne(
         { _id: new ObjectId(userId) },
-        { $set: { isBanned: true, banMessage: banMessage } }
+        { $set: { isBanned: true, banMessage: banMessage, bannedAt: new Date() } }
     );
     
     if (result.modifiedCount === 0) {
@@ -1592,6 +1593,7 @@ export async function banUser(userId: string, banMessage: string): Promise<{ suc
     }
 
     revalidatePath('/admin/users');
+    revalidatePath('/admin/banned-users');
     return { success: true, message: 'User has been banned.' };
 }
 
@@ -1604,7 +1606,7 @@ export async function unbanUser(userId: string): Promise<{ success: boolean; mes
     
     const result = await db.collection<User>('users').updateOne(
         { _id: new ObjectId(userId) },
-        { $set: { isBanned: false }, $unset: { banMessage: "" } }
+        { $set: { isBanned: false }, $unset: { banMessage: "", bannedAt: "" } }
     );
     
     if (result.modifiedCount === 0) {
@@ -1612,6 +1614,7 @@ export async function unbanUser(userId: string): Promise<{ success: boolean; mes
     }
 
     revalidatePath('/admin/users');
+    revalidatePath('/admin/banned-users');
     return { success: true, message: 'User has been unbanned.' };
 }
 

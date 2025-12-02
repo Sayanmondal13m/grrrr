@@ -30,6 +30,7 @@ export interface User {
     canSetGiftPassword?: boolean; // Flag to check if user can set/reset gift password
     isBanned?: boolean;
     banMessage?: string; // A message to show the user when they are banned
+    bannedAt?: Date; // Timestamp for when the user was banned
     visits?: Date[];
     isHidden?: boolean; // Flag to hide user from admin list
     fcmToken?: string; // Firebase Cloud Messaging token
