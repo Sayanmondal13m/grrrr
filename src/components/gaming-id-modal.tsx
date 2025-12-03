@@ -15,6 +15,13 @@ import { cn } from '@/lib/utils';
 import { useIsMobile } from '@/hooks/use-mobile';
 import BannedNotice from './banned-notice';
 
+// Declare fbq for TypeScript
+declare global {
+  interface Window {
+    fbq: (...args: any[]) => void;
+  }
+}
+
 interface GamingIdModalProps {
   isOpen: boolean;
   onOpenChange: (isOpen: boolean) => void;
@@ -61,6 +68,10 @@ export default function GamingIdModal({ isOpen, onOpenChange }: GamingIdModalPro
       // Check if it's a new registration by looking at the welcome message
       if (result.message.includes('800 coins')) {
         setRegistrationSuccess({ coins: 800 });
+        // Fire Meta Pixel event for new registration
+        if (typeof window.fbq === 'function') {
+          window.fbq('track', 'CompleteRegistration');
+        }
       } else {
         // For returning users, show animation without coins
         setRegistrationSuccess({});
