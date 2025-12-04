@@ -399,6 +399,11 @@ export default function PurchaseModal({ product, user: initialUser, onClose }: P
                     <div className="text-center">
                         <p className="text-sm text-muted-foreground">Amount to Pay</p>
                         <p className="text-4xl font-bold text-primary font-sans">₹{finalPrice.toFixed(2)}</p>
+                        {convenienceFee > 0 && (
+                          <p className="text-xs text-muted-foreground font-sans mt-1">
+                              (Includes ₹{convenienceFee.toFixed(2)} processing & tax fee)
+                          </p>
+                        )}
                     </div>
                     
                     <div className="flex flex-col items-center gap-2">
