@@ -411,7 +411,18 @@ export default function PurchaseModal({ product, user: initialUser, onClose }: P
                             {isQrLoading ? (
                                 <Loader2 className="w-10 h-10 animate-spin text-primary" />
                             ) : (
-                                <QRCode value={upiUrl} size={176} className="w-full h-full" />
+                                <div style={{ height: "auto", margin: "0 auto", maxWidth: 176, width: "100%", position: 'relative' }}>
+                                    <QRCode
+                                        value={upiUrl}
+                                        size={176}
+                                        level="M"
+                                        style={{ height: "auto", maxWidth: "100%", width: "100%" }}
+                                        viewBox={`0 0 176 176`}
+                                    />
+                                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white p-1 rounded-md">
+                                        <Image src="/img/upi.png" alt="UPI Logo" width={32} height={32} />
+                                    </div>
+                                </div>
                             )}
                         </div>
                         {qrCountdown > 0 ? (
