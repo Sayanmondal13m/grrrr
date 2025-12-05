@@ -1,3 +1,4 @@
+
 'use server';
 
 import { isAdminAuthenticated } from '@/app/actions';
@@ -31,7 +32,7 @@ export async function getIpHistory(page: number, searchId: string, searchIp: str
         .sort({ 'ipHistory.timestamp': -1 }) // Sort by most recent IP entry
         .skip(skip)
         .limit(PAGE_SIZE)
-        .project({ gamingId: 1, ipHistory: 1 }) // Only fetch necessary fields
+        .project({ gamingId: 1, ipHistory: 1, fingerprintHistory: 1 }) // Also fetch fingerprint history
         .toArray();
     
     const totalUsers = await db.collection('users').countDocuments(query);

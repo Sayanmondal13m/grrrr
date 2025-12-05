@@ -1,3 +1,4 @@
+
 'use client';
 
 import Link from 'next/link';
@@ -22,7 +23,7 @@ const navItems = [
   { href: '/admin/visualize-id', label: 'Visualize ID', icon: PersonStanding },
   { href: '/admin/promoted-ids', label: 'Promoted IDs', icon: BadgeCheck },
   { href: '/admin/login-history', label: 'Login History', icon: History },
-  { href: '/admin/ip-logger', label: 'IP Logger', icon: Fingerprint },
+  { href: '/admin/ip-logger', label: 'User Security Logs', icon: Fingerprint },
   { href: '/admin/withdrawals', label: 'Withdrawals', icon: Banknote },
   { href: '/admin/price-management', label: 'Price Management', icon: Tag },
   { href: '/admin/vanished-products', label: 'Vanished Products', icon: ArchiveRestore },

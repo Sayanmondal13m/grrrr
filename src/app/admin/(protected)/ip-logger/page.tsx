@@ -1,3 +1,4 @@
+
 import IpLogList from './_components/ip-log-list';
 import { getIpHistory } from './actions';
 import { unstable_noStore as noStore } from 'next/cache';

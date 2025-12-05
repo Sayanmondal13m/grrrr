@@ -11,6 +11,7 @@ import { useState, useEffect, useCallback } from 'react';
 import LoadingScreen from '@/components/loading-screen';
 import { getEvents, getNotificationsForUser, getUserData, markNotificationAsRead, saveFcmToken } from './actions';
 import { logUserIp } from './actions/ip-logger';
+import { logUserFingerprint } from './actions/fingerprint-logger';
 import type { Event, Notification, User } from '@/lib/definitions';
 import PopupNotification from '@/components/popup-notification';
 import EventModal from '@/components/event-modal';
@@ -53,9 +54,10 @@ export default function RootLayout({
     const userData = await getUserData();
     setUser(userData);
     
-    // Log user IP address in the background
+    // Log user IP and Fingerprint in the background
     if (userData) {
       logUserIp();
+      // This will be triggered after FingerprintJS script loads
     }
 
     if (userData?.isBanned) {
@@ -187,6 +189,23 @@ export default function RootLayout({
     }
   };
 
+  const handleFingerprint = useCallback(async () => {
+    if (user && (window as any).FingerprintJS) {
+      try {
+        const fp = await (window as any).FingerprintJS.load();
+        const result = await fp.get();
+        await logUserFingerprint(result.visitorId);
+      } catch (error) {
+        console.error('Error getting or logging fingerprint:', error);
+      }
+    }
+  }, [user]);
+
+  useEffect(() => {
+    // This effect runs when the FingerprintJS script has loaded and when the user object is available.
+    handleFingerprint();
+  }, [handleFingerprint]);
+
   const childrenWithProps = React.Children.map(children, child => {
     if (React.isValidElement(child)) {
       return React.cloneElement(child as React.ReactElement<any>, { onUserRegistered });
@@ -203,6 +222,7 @@ export default function RootLayout({
         <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&family=Noto+Sans:wght@400;700&display=swap" rel="stylesheet" />
         <link href="https://fonts.googleapis.com/css2?family=PT+Sans:wght@400;700&display=swap" rel="stylesheet" />
         <link rel="manifest" href="/manifest.json" />
+        <Script src="https://cdn.jsdelivr.net/npm/@fingerprintjs/fingerprintjs@3/dist/fp.min.js" strategy="afterInteractive" onLoad={handleFingerprint}></Script>
         <Script id="meta-pixel" strategy="afterInteractive">
           {`
             !function(f,b,e,v,n,t,s)

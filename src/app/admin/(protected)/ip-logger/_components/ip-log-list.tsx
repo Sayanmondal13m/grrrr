@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useState, useTransition, useEffect } from 'react';
@@ -6,8 +7,8 @@ import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogTrigger } from '@/components/ui/dialog';
-import { Loader2, Search, History } from 'lucide-react';
-import { getIpHistory, searchUsersByIp } from '../actions';
+import { Loader2, Search, History, Fingerprint } from 'lucide-react';
+import { getIpHistory } from '../actions';
 import { Input } from '@/components/ui/input';
 import { type User } from '@/lib/definitions';
 import { Badge } from '@/components/ui/badge';
@@ -81,7 +82,7 @@ export default function IpLogList({ initialUsers, initialHasMore, totalUsers }: 
                 <CardHeader>
                     <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                         <div className="flex items-center gap-2">
-                           <CardTitle>User IP History</CardTitle>
+                           <CardTitle>User Security Logs</CardTitle>
                             {totalUsers !== undefined && (
                                 <Badge variant="secondary">{totalUsers} Users</Badge>
                             )}
@@ -107,38 +108,70 @@ export default function IpLogList({ initialUsers, initialHasMore, totalUsers }: 
                             {users.map(user => (
                                 <Card key={user._id.toString()}>
                                     <CardHeader className="pb-4">
-                                        <div className="flex justify-between items-start">
+                                        <div className="flex justify-between items-center">
                                             <CardTitle className="text-base font-mono">{user.gamingId}</CardTitle>
-                                            <Dialog>
-                                                <DialogTrigger asChild>
-                                                    <Button variant="outline" size="sm" className="gap-2">
-                                                        <History className="h-4 w-4"/>
-                                                        View History ({user.ipHistory?.length || 0})
-                                                    </Button>
-                                                </DialogTrigger>
-                                                <DialogContent>
-                                                    <DialogHeader>
-                                                        <DialogTitle>IP History for {user.gamingId}</DialogTitle>
-                                                        <DialogDescription>
-                                                            A log of all IPs used by this user, most recent first.
-                                                        </DialogDescription>
-                                                    </DialogHeader>
-                                                    <ScrollArea className="h-72">
-                                                        <div className="space-y-2 pr-4">
-                                                            {user.ipHistory && user.ipHistory.length > 0 ? (
-                                                                user.ipHistory.slice().reverse().map((entry: any, index: number) => (
-                                                                    <div key={index} className="flex justify-between items-center text-sm p-2 rounded-md bg-muted/50">
-                                                                        <p className="font-mono">{entry.ip}</p>
-                                                                        <p className="text-xs text-muted-foreground"><FormattedDate dateString={entry.timestamp} /></p>
-                                                                    </div>
-                                                                ))
-                                                            ) : (
-                                                                <p className="text-muted-foreground text-center py-8">No IP history for this user.</p>
-                                                            )}
-                                                        </div>
-                                                    </ScrollArea>
-                                                </DialogContent>
-                                            </Dialog>
+                                            <div className="flex items-center gap-2">
+                                                <Dialog>
+                                                    <DialogTrigger asChild>
+                                                        <Button variant="outline" size="sm" className="gap-2">
+                                                            <History className="h-4 w-4"/>
+                                                            IP History ({user.ipHistory?.length || 0})
+                                                        </Button>
+                                                    </DialogTrigger>
+                                                    <DialogContent>
+                                                        <DialogHeader>
+                                                            <DialogTitle>IP History for {user.gamingId}</DialogTitle>
+                                                            <DialogDescription>
+                                                                A log of all IPs used by this user, most recent first.
+                                                            </DialogDescription>
+                                                        </DialogHeader>
+                                                        <ScrollArea className="h-72">
+                                                            <div className="space-y-2 pr-4">
+                                                                {user.ipHistory && user.ipHistory.length > 0 ? (
+                                                                    user.ipHistory.slice().reverse().map((entry: any, index: number) => (
+                                                                        <div key={index} className="flex justify-between items-center text-sm p-2 rounded-md bg-muted/50">
+                                                                            <p className="font-mono">{entry.ip}</p>
+                                                                            <p className="text-xs text-muted-foreground"><FormattedDate dateString={entry.timestamp} /></p>
+                                                                        </div>
+                                                                    ))
+                                                                ) : (
+                                                                    <p className="text-muted-foreground text-center py-8">No IP history for this user.</p>
+                                                                )}
+                                                            </div>
+                                                        </ScrollArea>
+                                                    </DialogContent>
+                                                </Dialog>
+                                                <Dialog>
+                                                    <DialogTrigger asChild>
+                                                         <Button variant="outline" size="sm" className="gap-2">
+                                                            <Fingerprint className="h-4 w-4"/>
+                                                            Devices ({user.fingerprintHistory?.length || 0})
+                                                        </Button>
+                                                    </DialogTrigger>
+                                                    <DialogContent>
+                                                        <DialogHeader>
+                                                            <DialogTitle>Device History for {user.gamingId}</DialogTitle>
+                                                            <DialogDescription>
+                                                                A log of all device fingerprints used by this user, most recent first.
+                                                            </DialogDescription>
+                                                        </DialogHeader>
+                                                        <ScrollArea className="h-72">
+                                                            <div className="space-y-2 pr-4">
+                                                                {user.fingerprintHistory && user.fingerprintHistory.length > 0 ? (
+                                                                    user.fingerprintHistory.slice().reverse().map((entry: any, index: number) => (
+                                                                        <div key={index} className="flex justify-between items-center text-sm p-2 rounded-md bg-muted/50">
+                                                                            <p className="font-mono text-xs truncate">{entry.fingerprint}</p>
+                                                                            <p className="text-xs text-muted-foreground shrink-0 ml-2"><FormattedDate dateString={entry.timestamp} /></p>
+                                                                        </div>
+                                                                    ))
+                                                                ) : (
+                                                                    <p className="text-muted-foreground text-center py-8">No device history for this user.</p>
+                                                                )}
+                                                            </div>
+                                                        </ScrollArea>
+                                                    </DialogContent>
+                                                </Dialog>
+                                            </div>
                                         </div>
                                     </CardHeader>
                                 </Card>

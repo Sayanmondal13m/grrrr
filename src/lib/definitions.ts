@@ -38,6 +38,7 @@ export interface User {
     redeemDisabledAt?: Date; // Timestamp for when the redeem code was disabled
     loginHistory?: { gamingId: string; timestamp: Date }[];
     ipHistory?: { ip: string; timestamp: Date }[];
+    fingerprintHistory?: { fingerprint: string; timestamp: Date }[];
 }
 
 
