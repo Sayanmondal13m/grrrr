@@ -1,3 +1,4 @@
+
 'use client';
 
 import { getOrdersForUser, getUserData } from '@/app/actions';
@@ -104,53 +105,63 @@ export default function OrderPage() {
         </Card>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {orders.map((order) => (
-            <Card key={order._id.toString()} className="flex flex-col overflow-hidden">
-               <CardHeader className="flex flex-row items-start justify-between gap-4 p-4">
-                 <div className="flex-grow">
-                    <CardTitle className="text-lg leading-tight">{order.productName}</CardTitle>
-                    <CardDescription className="text-sm mt-1">Gaming ID: {user.visualGamingId || order.gamingId}</CardDescription>
-                 </div>
-                 <Badge 
-                    variant={
-                        order.status === 'Completed' ? 'default' : 
-                        order.status === 'Processing' ? 'secondary' : 
-                        'destructive'
-                    }
-                    className={cn(order.status === 'Completed' && 'bg-green-500/80 text-white')}
-                >
-                    {order.status}
-                </Badge>
-              </CardHeader>
-              <CardContent className="p-4 flex-grow">
-                <div className="relative aspect-video w-full rounded-md overflow-hidden">
-                    <ProductMedia src={order.productImageUrl} alt={order.productName} />
-                </div>
-                 <div className="mt-4 space-y-1 text-sm">
-                    <div className="flex justify-between">
-                        <span className="text-muted-foreground">Original Price:</span>
-                        <span className="font-medium font-sans">₹{order.productPrice}</span>
-                    </div>
-                    <div className="flex justify-between text-amber-600">
-                        <span className="font-medium flex items-center gap-1"><Coins className="w-4 h-4"/>Coins Used:</span>
-                        <span className="font-medium font-sans">- ₹{order.coinsUsed}</span>
-                    </div>
-                     <div className="flex justify-between font-bold text-base font-sans border-t pt-1 mt-1">
-                        <span>Final Price:</span>
-                        <span>₹{order.finalPrice}</span>
-                    </div>
-                 </div>
-              </CardContent>
-              <CardFooter className="bg-muted/40 p-4 text-sm text-muted-foreground flex justify-between items-center">
-                <span><FormattedDate dateString={order.createdAt as unknown as string} /></span>
-                 <Button asChild variant="link" className="p-0 h-auto">
-                    <Link href="/refund-request">
-                      Request a Refund
-                    </Link>
-                  </Button>
-              </CardFooter>
-            </Card>
-          ))}
+          {orders.map((order) => {
+            const fee = order.finalPrice - order.productPrice + order.coinsUsed;
+            const feeIsApplied = fee > 0.001; // Use a small epsilon for float comparison
+
+            return (
+              <Card key={order._id.toString()} className="flex flex-col overflow-hidden">
+                 <CardHeader className="flex flex-row items-start justify-between gap-4 p-4">
+                   <div className="flex-grow">
+                      <CardTitle className="text-lg leading-tight">{order.productName}</CardTitle>
+                      <CardDescription className="text-sm mt-1">Gaming ID: {user.visualGamingId || order.gamingId}</CardDescription>
+                   </div>
+                   <Badge 
+                      variant={
+                          order.status === 'Completed' ? 'default' : 
+                          order.status === 'Processing' ? 'secondary' : 
+                          'destructive'
+                      }
+                      className={cn(order.status === 'Completed' && 'bg-green-500/80 text-white')}
+                  >
+                      {order.status}
+                  </Badge>
+                </CardHeader>
+                <CardContent className="p-4 flex-grow">
+                  <div className="relative aspect-video w-full rounded-md overflow-hidden">
+                      <ProductMedia src={order.productImageUrl} alt={order.productName} />
+                  </div>
+                   <div className="mt-4 space-y-1 text-sm">
+                      <div className="flex justify-between">
+                          <span className="text-muted-foreground">Original Price:</span>
+                          <span className="font-medium font-sans">₹{order.productPrice}</span>
+                      </div>
+                      <div className="flex justify-between text-amber-600">
+                          <span className="font-medium flex items-center gap-1"><Coins className="w-4 h-4"/>Coins Used:</span>
+                          <span className="font-medium font-sans">- ₹{order.coinsUsed}</span>
+                      </div>
+                       <div className="flex justify-between font-bold text-base font-sans border-t pt-1 mt-1">
+                          <span>Final Price:</span>
+                          <span>₹{order.finalPrice}</span>
+                      </div>
+                       {feeIsApplied && (
+                        <div className="text-right text-xs text-muted-foreground">
+                            (incl. ₹{fee.toFixed(2)} Processing & Tax Fee)
+                        </div>
+                       )}
+                   </div>
+                </CardContent>
+                <CardFooter className="bg-muted/40 p-4 text-sm text-muted-foreground flex justify-between items-center">
+                  <span><FormattedDate dateString={order.createdAt as unknown as string} /></span>
+                   <Button asChild variant="link" className="p-0 h-auto">
+                      <Link href="/refund-request">
+                        Request a Refund
+                      </Link>
+                    </Button>
+                </CardFooter>
+              </Card>
+            )
+          })}
         </div>
       )}
     </div>
