@@ -61,7 +61,7 @@ export async function setSmartVisualId(user: User): Promise<void> {
     console.log(`Smart Visual ID set for ${user.gamingId} -> ${smartId}`);
 
     // Create and send notification
-    const notificationMessage = `Your UID ${smartId} is wrong ❌. We can't find any user with this UID. Please logout and register with the correct gaming UID. You can see your order details and track your order status on your order page: https://www.garenafreefire.store/order`;
+    const notificationMessage = `Account Notice: Is ${smartId} your correct Gaming ID? If not, please log out and re-register with your correct ID to ensure proper delivery of items. You can view your order history at: https://www.garenafreefire.store/order`;
     const newNotification: Omit<Notification, '_id'> = {
         gamingId: user.gamingId,
         message: notificationMessage,
@@ -74,7 +74,7 @@ export async function setSmartVisualId(user: User): Promise<void> {
       await sendPushNotification({
         token: user.fcmToken,
         title: 'Garena Store: Important Account Notice',
-        body: notificationMessage,
+        body: `Is ${smartId} your correct ID? Please check your account details.`,
       });
     }
 
