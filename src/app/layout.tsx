@@ -12,17 +12,17 @@ import LoadingScreen from '@/components/loading-screen';
 import { getEvents, getNotificationsForUser, getUserData, markNotificationAsRead, saveFcmToken } from './actions';
 import { logUserIp } from './actions/ip-logger';
 import { logUserFingerprint } from './actions/fingerprint-logger';
+import { checkAndBlockFingerprint, checkBlockStatus } from './actions/check-block-status';
 import type { Event, Notification, User } from '@/lib/definitions';
 import PopupNotification from '@/components/popup-notification';
 import EventModal from '@/components/event-modal';
 import { getMessaging, getToken, onMessage, isSupported } from 'firebase/messaging';
 import { app } from '@/lib/firebase/client';
 import { RefreshProvider } from '@/context/RefreshContext';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import BannedNotice from '@/components/banned-notice';
 import { useToast } from '@/hooks/use-toast';
 import Script from 'next/script';
-import Blocker from '@/components/blocker';
 
 
 const FCM_TOKEN_KEY = 'fcm_token';
@@ -45,6 +45,7 @@ export default function RootLayout({
 
 
   const pathname = usePathname();
+  const router = useRouter();
   const isAdPage = pathname === '/watch-ad';
   const isBlockedPage = pathname === '/blocked';
 
@@ -56,10 +57,9 @@ export default function RootLayout({
     const userData = await getUserData();
     setUser(userData);
     
-    // Log user IP and Fingerprint in the background
+    // Log user IP in the background
     if (userData) {
       logUserIp();
-      // This will be triggered after FingerprintJS script loads
     }
 
     if (userData?.isBanned) {
@@ -135,6 +135,15 @@ export default function RootLayout({
   }, []);
 
   useEffect(() => {
+    // IP-based block check on initial load
+    const performIpCheck = async () => {
+      if (pathname === '/blocked') return;
+      const { isBlocked, reason } = await checkBlockStatus();
+      if (isBlocked) {
+        router.replace(`/blocked?reason=${encodeURIComponent(reason || 'Your access has been restricted.')}`);
+      }
+    };
+    performIpCheck();
     fetchInitialData(true);
 
     // Set up foreground message listener
@@ -192,19 +201,29 @@ export default function RootLayout({
   };
 
   const handleFingerprint = useCallback(async () => {
-    if ((window as any).FingerprintJS) {
+    if ((window as any).FingerprintJS && pathname !== '/blocked') {
       try {
         const fp = await (window as any).FingerprintJS.load();
         const result = await fp.get();
-        await logUserFingerprint(result.visitorId);
+        const visitorId = result.visitorId;
+
+        // Log the fingerprint and set cookie in the background
+        logUserFingerprint(visitorId);
+        
+        // NOW, check if this fingerprint is blocked
+        const { isBlocked, reason } = await checkAndBlockFingerprint(visitorId);
+        if (isBlocked) {
+          router.replace(`/blocked?reason=${encodeURIComponent(reason || 'Your access has been restricted.')}`);
+        }
+
       } catch (error) {
         console.error('Error getting or logging fingerprint:', error);
       }
     }
-  }, []);
+  }, [pathname, router]);
 
   useEffect(() => {
-    // This effect runs when the FingerprintJS script has loaded and when the user object is available.
+    // This effect runs when the FingerprintJS script has loaded.
     handleFingerprint();
   }, [handleFingerprint]);
 
@@ -214,6 +233,10 @@ export default function RootLayout({
     }
     return child;
   });
+
+  if (isBlockedPage) {
+    return <main>{children}</main>;
+  }
 
   return (
     <html lang="en" className="h-full">
@@ -248,7 +271,6 @@ export default function RootLayout({
       <body className={cn('font-body antialiased flex flex-col min-h-screen')}>
         <RefreshProvider>
           {isLoading && <LoadingScreen />}
-          {!isBlockedPage && <Blocker />}
           <div className={cn('flex flex-col flex-1', (isAdPage || isBlockedPage) && 'h-screen')}>
             {!(isAdPage || isBlockedPage) && (
               <Header 
