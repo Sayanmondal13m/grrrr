@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { logoutAdmin } from '@/app/actions';
-import { Home, ListChecks, ListX, Users, LogOut, Banknote, Tag, ArchiveRestore, Coins, ShieldBan, Box, EyeOff, Bell, CalendarPlus, MessageCircle, SlidersHorizontal, FileCode, PersonStanding, BadgeCheck, History, Clapperboard, BellRing, GalleryHorizontal, Timer, MessageSquareText, ShieldX, Fingerprint } from 'lucide-react';
+import { Home, ListChecks, ListX, Users, LogOut, Banknote, Tag, ArchiveRestore, Coins, ShieldBan, Box, EyeOff, Bell, CalendarPlus, MessageCircle, SlidersHorizontal, FileCode, PersonStanding, BadgeCheck, History, Clapperboard, BellRing, GalleryHorizontal, Timer, MessageSquareText, ShieldX, Fingerprint, Ban } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import Image from 'next/image';
 
@@ -24,6 +24,7 @@ const navItems = [
   { href: '/admin/promoted-ids', label: 'Promoted IDs', icon: BadgeCheck },
   { href: '/admin/login-history', label: 'Login History', icon: History },
   { href: '/admin/ip-logger', label: 'User Security Logs', icon: Fingerprint },
+  { href: '/admin/block-management', label: 'Block Management', icon: Ban },
   { href: '/admin/withdrawals', label: 'Withdrawals', icon: Banknote },
   { href: '/admin/price-management', label: 'Price Management', icon: Tag },
   { href: '/admin/vanished-products', label: 'Vanished Products', icon: ArchiveRestore },

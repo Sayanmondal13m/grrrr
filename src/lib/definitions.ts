@@ -1,5 +1,4 @@
 
-
 import { type ObjectId } from 'mongodb';
 
 // Represents a user account created via username/password on the /account page.
@@ -38,7 +37,7 @@ export interface User {
     redeemDisabledAt?: Date; // Timestamp for when the redeem code was disabled
     loginHistory?: { gamingId: string; timestamp: Date }[];
     ipHistory?: { ip: string; timestamp: Date }[];
-    fingerprintHistory?: { fingerprint: string; timestamp: Date }[];
+    fingerprintHistory?: { fingerprint: string; gpu?: string; timestamp: Date }[];
 }
 
 
@@ -204,4 +203,12 @@ export interface SmsWebhookLog {
     matchedPaymentLockId?: ObjectId;
     parsedAmount?: number;
     matchedGamingId?: string;
+}
+
+export interface BlockedIdentifier {
+  _id: ObjectId;
+  type: 'ip' | 'fingerprint';
+  value: string;
+  reason: string;
+  createdAt: Date;
 }

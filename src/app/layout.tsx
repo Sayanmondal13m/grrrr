@@ -22,6 +22,7 @@ import { usePathname } from 'next/navigation';
 import BannedNotice from '@/components/banned-notice';
 import { useToast } from '@/hooks/use-toast';
 import Script from 'next/script';
+import Blocker from '@/components/blocker';
 
 
 const FCM_TOKEN_KEY = 'fcm_token';
@@ -45,6 +46,7 @@ export default function RootLayout({
 
   const pathname = usePathname();
   const isAdPage = pathname === '/watch-ad';
+  const isBlockedPage = pathname === '/blocked';
 
 
   const fetchInitialData = useCallback(async (isInitialLoad = false) => {
@@ -190,7 +192,7 @@ export default function RootLayout({
   };
 
   const handleFingerprint = useCallback(async () => {
-    if (user && (window as any).FingerprintJS) {
+    if ((window as any).FingerprintJS) {
       try {
         const fp = await (window as any).FingerprintJS.load();
         const result = await fp.get();
@@ -199,7 +201,7 @@ export default function RootLayout({
         console.error('Error getting or logging fingerprint:', error);
       }
     }
-  }, [user]);
+  }, []);
 
   useEffect(() => {
     // This effect runs when the FingerprintJS script has loaded and when the user object is available.
@@ -246,8 +248,9 @@ export default function RootLayout({
       <body className={cn('font-body antialiased flex flex-col min-h-screen')}>
         <RefreshProvider>
           {isLoading && <LoadingScreen />}
-          <div className={cn('flex flex-col flex-1', isAdPage && 'h-screen')}>
-            {!isAdPage && (
+          {!isBlockedPage && <Blocker />}
+          <div className={cn('flex flex-col flex-1', (isAdPage || isBlockedPage) && 'h-screen')}>
+            {!(isAdPage || isBlockedPage) && (
               <Header 
                 user={user} 
                 notifications={standardNotifications} 
@@ -255,8 +258,8 @@ export default function RootLayout({
                 onNotificationRefresh={handleNotificationRefresh}
               />
             )}
-            <main className={cn('flex-grow', isAdPage && 'h-full')}>{childrenWithProps}</main>
-            {!isAdPage && <Footer />}
+            <main className={cn('flex-grow', (isAdPage || isBlockedPage) && 'h-full')}>{childrenWithProps}</main>
+            {!(isAdPage || isBlockedPage) && <Footer />}
           </div>
           <Toaster />
           {popupNotifications.length > 0 && (
