@@ -97,7 +97,7 @@ Garena is the official online shop for Free Fire players, headquartered in Singa
 Official & Trusted: 100% safe, verified items.
 Global Access: Available worldwide.
 Flexible Payments: Pay via UPI or Redeem Code (email: garenaffmaxstore@gmail.com).
-Referral Rewards: Earn 50% of your friend’s top-up after their order completes.
+Referral Rewards: To get access to our referral program to earn rewards, please contact our support team.
 Wallet System: Stores referral money (withdrawable via bank or UPI).
 Coin System:
 800 coins on first registration.
@@ -115,7 +115,7 @@ For Redeem Code, contact garenaffmaxstore@gmail.com with your Gaming ID and item
 Track orders on the “Orders” page.
 Request refunds via the “Orders” page (subject to review).
 💰 Referral & Wallet System
-Generate your referral link on the Account page.
+To get referral access and generate your referral link, please contact our support team.
 When someone signs up and makes a purchase, you earn 50% of what they paid in your wallet.
 Wallet funds can be withdrawn via UPI or bank transfer.
 Wallet is separate from coins.
