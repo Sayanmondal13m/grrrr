@@ -58,6 +58,7 @@ Rewards: Users must watch the entire ad to get coins.
 Email Response: Standard time is 32 working hours. If worried, they can resend the email.
 Refunds: No official max time, but usually processed within 14 days.
 Unauthorized/Expired Purchases: This violates T&C. Item will not be delivered; account may be suspended.
+Bug Exploitation: If a user finds a bug and uses it for their own benefit, it will result in "Access Denied."
 Blank/Missing Products: The product is being updated. Ask them to wait a moment and check back.
 New Event Items: Can take up to 2 days to appear. Not all in-game items are sold here.
 Access Denied: Means a serious rule was broken. They must email garenaffmaxstore@gmail.com.
