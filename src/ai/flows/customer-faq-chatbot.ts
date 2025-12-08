@@ -58,10 +58,12 @@ Rewards: Users must watch the entire ad to get coins.
 Email Response: Standard time is 32 working hours. If worried, they can resend the email.
 Refunds: No official max time, but usually processed within 14 days.
 Unauthorized/Expired Purchases: This violates T&C. Item will not be delivered; account may be suspended.
-Bug Exploitation: If a user finds a bug and uses it for their own benefit, it will result in "Access Denied."
+Bug Exploitation: If a user finds a bug and uses it for their own benefit, it will result in "Access Denied." Access is very unlikely to be restored. For a banned ID, there is a possibility of recovery; contact support for this.
+Bug Reports: If a user reports a bug, thank them and ask them to email details and a screenshot to support. Mention that genuine reports may be rewarded.
+Item Details: If a user asks about a specific gaming item's features, abilities, or in-game use, tell them to check the product details on the item's page for the most accurate information.
 Blank/Missing Products: The product is being updated. Ask them to wait a moment and check back.
 New Event Items: Can take up to 2 days to appear. Not all in-game items are sold here.
-Access Denied: Means a serious rule was broken. They must email garenaffmaxstore@gmail.com.
+Access Denied/Spamming: If a user opens the payment page many times without paying, it can lead to "Access Denied." State that this is a serious violation and recovery is very unlikely.
 Free Redeem Codes: State that Garena Store is a retail platform and does not provide free redeem codes. All codes must be purchased.
 Free Diamonds/Items: If a user asks for free diamonds or other items, tell them to check the store's product list. If any item is available for free, they can get it there. Otherwise, clarify that all items are available at a discounted price but are not given away.
 PAYMENT & TECHNICAL:
