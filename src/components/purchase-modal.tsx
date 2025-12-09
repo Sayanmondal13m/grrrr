@@ -372,7 +372,7 @@ export default function PurchaseModal({ product, user: initialUser, onClose }: P
         );
     case 'qrPayment':
         const upiId = "garenas@freecharge";
-        const upiUrl = `upi://pay?pa=${upiId}&pn=Garena&am=${finalPrice}&cu=INR&tn=Purchase for ${product.name}`;
+        const upiUrl = `upi://pay?pa=${upiId}&pn=Garena&am=${finalPrice}&cu=INR&tn=Purchase for ${product.name} - ID: ${user?.gamingId}`;
         const minutes = Math.floor(qrCountdown / 60);
         const seconds = qrCountdown % 60;
         return (
