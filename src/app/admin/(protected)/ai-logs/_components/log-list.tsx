@@ -12,6 +12,9 @@ import { type AiLog } from '@/lib/definitions';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
+import Image from 'next/image';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogClose } from '@/components/ui/dialog';
+import { X } from 'lucide-react';
 
 
 interface LogListProps {
@@ -44,6 +47,7 @@ export default function LogList({ initialLogs, initialHasMore, totalLogs }: LogL
     const pathname = usePathname();
     const searchParams = useSearchParams();
     const { toast } = useToast();
+    const [zoomedImage, setZoomedImage] = useState<string | null>(null);
 
 
     const search = searchParams.get('search') || '';
@@ -134,6 +138,14 @@ export default function LogList({ initialLogs, initialHasMore, totalLogs }: LogL
                                     <CardContent>
                                         <div className="p-3 rounded-lg bg-blue-50 border border-blue-200">
                                             <p className="font-semibold text-blue-800">User:</p>
+                                            {log.mediaDataUri && (
+                                                <div 
+                                                    className="relative w-full aspect-square mb-2 rounded-lg overflow-hidden cursor-pointer max-w-[200px]"
+                                                    onClick={() => setZoomedImage(log.mediaDataUri!)}
+                                                >
+                                                    <Image src={log.mediaDataUri} alt="User upload" layout="fill" className="object-cover" />
+                                                </div>
+                                            )}
                                             <p>{log.question}</p>
                                         </div>
                                         <div className="p-3 mt-2 rounded-lg bg-gray-50 border">
@@ -179,6 +191,28 @@ export default function LogList({ initialLogs, initialHasMore, totalLogs }: LogL
                     </Button>
                 </div>
             )}
+            
+            <Dialog open={!!zoomedImage} onOpenChange={() => setZoomedImage(null)}>
+                <DialogContent className="max-w-3xl w-full p-0 bg-transparent border-none shadow-none" hideCloseButton={true}>
+                    <DialogHeader>
+                        <DialogTitle className="sr-only">Zoomed Image</DialogTitle>
+                    </DialogHeader>
+                    <div className="relative flex items-center justify-center">
+                         <DialogClose asChild>
+                            <button
+                                type="button"
+                                className="absolute -top-2 -right-2 z-10 rounded-full p-1.5 bg-white text-black transition-opacity hover:opacity-80 focus:outline-none"
+                                aria-label="Close"
+                            >
+                                <X className="h-5 w-5" />
+                            </button>
+                        </DialogClose>
+                        {zoomedImage && (
+                          <Image src={zoomedImage} alt="Zoomed media" width={1200} height={800} className="max-w-full max-h-[90vh] object-contain rounded-lg" />
+                        )}
+                    </div>
+                </DialogContent>
+            </Dialog>
         </div>
     );
 }
