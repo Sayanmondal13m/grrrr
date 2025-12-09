@@ -281,7 +281,7 @@ export default function FaqChatbot() {
                  <DialogClose asChild>
                     <button
                         type="button"
-                        className="absolute -top-2 -right-2 z-10 rounded-full p-1.5 bg-white text-black transition-opacity hover:opacity-80 focus:outline-none"
+                        className="absolute top-0 right-0 z-10 rounded-full p-1.5 bg-white text-black transition-opacity hover:opacity-80 focus:outline-none"
                         aria-label="Close"
                     >
                         <X className="h-5 w-5" />
