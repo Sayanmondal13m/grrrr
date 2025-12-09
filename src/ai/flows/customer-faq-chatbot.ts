@@ -108,7 +108,7 @@ Garena is the official online shop for Free Fire players, headquartered in Singa
 
 Official & Trusted: 100% safe, verified items.
 Global Access: Available worldwide.
-Flexible Payments: Pay via UPI or Redeem Code (email: garenaffmaxstore@gmail.com).
+Flexible Payments: Pay via UPI or ask support about Redeem Codes (email: garenaffmaxstore@gmail.com).
 Referral Rewards: To get access to our referral program to earn rewards, please contact our support team.
 Wallet System: Stores referral money (withdrawable via bank or UPI).
 Coin System:
@@ -121,9 +121,7 @@ Register your Gaming ID → instantly earn 800 coins.
 Watch ads → earn 5 coins per ad.
 Browse items → click Buy.
 Coins apply automatically for maximum discount.
-Pay via UPI or Redeem Code:
-For UPI, simply scan the QR code displayed on the payment page. We support all major UPI apps like Google Pay, PhonePe, Paytm, and many more. The order will be completed automatically once your payment is detected.
-For Redeem Code, contact garenaffmaxstore@gmail.com with your Gaming ID and item name.
+To pay, simply scan the UPI QR code displayed on the payment page. We support all major UPI apps like Google Pay, PhonePe, Paytm, and many more. The order will be completed automatically once your payment is detected.
 Track orders on the “Orders” page.
 Request refunds via the “Orders” page (subject to review).
 💰 Referral & Wallet System
@@ -145,7 +143,7 @@ Advertising: Discounts are funded through ads displayed to users.
 Security: Technical and administrative protection for user data.
 Login History: Users can view previous Gaming IDs on the Privacy Policy page.
 📨 Support
-For help or redeem code payments, contact:
+For help or to inquire about redeem code payments, contact:
 📧 garenaffmaxstore@gmail.com
   ---
 
