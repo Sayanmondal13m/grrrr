@@ -2,7 +2,7 @@
 'use client';
 
 import { useState, useRef, type FormEvent, useEffect, useCallback } from 'react';
-import { Bot, Loader2, Send, Sparkles, Image as ImageIcon, X, Film } from 'lucide-react';
+import { Bot, Loader2, Send, Sparkles, Image as ImageIcon, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Sheet,
@@ -32,7 +32,6 @@ interface Message {
   content: string;
   timestamp?: Date;
   mediaDataUri?: string;
-  mediaType?: 'image' | 'video';
 }
 
 const FormattedDate = ({ date }: { date?: Date }) => {
@@ -54,8 +53,8 @@ export default function FaqChatbot() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isHistoryLoading, setIsHistoryLoading] = useState(false);
-  const [media, setMedia] = useState<{ uri: string; type: 'image' | 'video' } | null>(null);
-  const [zoomedMedia, setZoomedMedia] = useState<{ uri: string; type: 'image' | 'video' } | null>(null);
+  const [media, setMedia] = useState<{ uri: string; type: 'image' } | null>(null);
+  const [zoomedMedia, setZoomedMedia] = useState<{ uri: string; type: 'image' } | null>(null);
 
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -74,10 +73,12 @@ export default function FaqChatbot() {
   const fetchHistory = useCallback(async () => {
     setIsHistoryLoading(true);
     const historyLogs = await getChatHistory();
-    const formattedHistory: Message[] = historyLogs.flatMap(log => [
-        { role: 'user', content: log.question, timestamp: new Date(log.createdAt) },
-        { role: 'assistant', content: log.answer, timestamp: new Date(log.createdAt) }
-    ]);
+    const formattedHistory: Message[] = historyLogs.flatMap(log => {
+        const historyMessages: Message[] = [];
+        historyMessages.push({ role: 'user', content: log.question, timestamp: new Date(log.createdAt), mediaDataUri: log.mediaDataUri });
+        historyMessages.push({ role: 'assistant', content: log.answer, timestamp: new Date(log.createdAt) });
+        return historyMessages;
+    });
     setMessages(formattedHistory);
     setIsHistoryLoading(false);
   }, []);
@@ -111,19 +112,18 @@ export default function FaqChatbot() {
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
-      if (file.size > 5 * 1024 * 1024) { // 5MB limit
+      if (file.size > 8 * 1024 * 1024) { // 8MB limit
         toast({
           variant: 'destructive',
           title: 'File too large',
-          description: 'Please select a file smaller than 5MB.',
+          description: 'Please select an image smaller than 8MB.',
         });
         return;
       }
 
       const reader = new FileReader();
       reader.onloadend = () => {
-        const type = file.type.startsWith('image/') ? 'image' : 'video';
-        setMedia({ uri: reader.result as string, type });
+        setMedia({ uri: reader.result as string, type: 'image' });
       };
       reader.readAsDataURL(file);
     }
@@ -138,10 +138,9 @@ export default function FaqChatbot() {
     setIsLoading(true);
     const userMessage: Message = { 
       role: 'user', 
-      content: question || 'Please analyze this media.', 
+      content: question || 'Please analyze this image.', 
       timestamp: new Date(), 
       mediaDataUri: media?.uri,
-      mediaType: media?.type
     };
     setMessages((prev) => [...prev, userMessage]);
 
@@ -188,7 +187,7 @@ export default function FaqChatbot() {
             Garena Assistant
           </SheetTitle>
           <SheetDescription>
-          Have a question? Ask me anything about our services. You can also upload an image or video (max 5MB).
+          Have a question? Ask me anything about our services. You can also upload an image (max 8MB).
           </SheetDescription>
         </SheetHeader>
         <div className="flex-grow mb-4 overflow-hidden">
@@ -216,13 +215,9 @@ export default function FaqChatbot() {
                         {message.mediaDataUri && (
                           <div 
                             className="relative w-full aspect-square mb-2 rounded-lg overflow-hidden cursor-pointer"
-                            onClick={() => setZoomedMedia({ uri: message.mediaDataUri!, type: message.mediaType! })}
+                            onClick={() => setZoomedMedia({ uri: message.mediaDataUri!, type: 'image' })}
                           >
-                             {message.mediaType === 'image' ? (
-                                <Image src={message.mediaDataUri} alt="User upload" fill className="object-cover" />
-                              ) : (
-                                <video src={message.mediaDataUri} className="object-cover w-full h-full" playsInline muted loop autoPlay />
-                              )}
+                            <Image src={message.mediaDataUri} alt="User upload" fill className="object-cover" />
                           </div>
                         )}
                         {message.content}
@@ -245,11 +240,7 @@ export default function FaqChatbot() {
           <form onSubmit={handleSubmit} className="flex flex-col w-full gap-2">
              {media && (
               <div className="relative w-24 h-24 rounded-md border p-1 bg-muted/50">
-                 {media.type === 'image' ? (
-                    <Image src={media.uri} alt="Preview" fill className="object-cover rounded-md" />
-                 ) : (
-                    <video src={media.uri} className="object-cover w-full h-full rounded-md" playsInline muted loop autoPlay />
-                 )}
+                 <Image src={media.uri} alt="Preview" fill className="object-cover rounded-md" />
                 <Button 
                   size="icon" 
                   variant="destructive" 
@@ -261,7 +252,7 @@ export default function FaqChatbot() {
               </div>
             )}
             <div className="flex w-full items-end space-x-2">
-              <input type="file" ref={fileInputRef} onChange={handleFileChange} accept="image/*,video/*" className="hidden" />
+              <input type="file" ref={fileInputRef} onChange={handleFileChange} accept="image/*" className="hidden" />
               <Button type="button" variant="ghost" size="icon" onClick={() => fileInputRef.current?.click()} disabled={isLoading || isHistoryLoading}>
                 <ImageIcon className="h-5 w-5" />
               </Button>
@@ -290,18 +281,14 @@ export default function FaqChatbot() {
                  <DialogClose asChild>
                     <button
                         type="button"
-                        className="absolute -top-1 -right-0.5 z-10 rounded-full p-1.5 bg-white text-black transition-opacity hover:opacity-80 focus:outline-none"
+                        className="absolute -top-2 -right-2 z-10 rounded-full p-1.5 bg-white text-black transition-opacity hover:opacity-80 focus:outline-none"
                         aria-label="Close"
                     >
                         <X className="h-5 w-5" />
                     </button>
                 </DialogClose>
                 {zoomedMedia?.uri && (
-                    zoomedMedia.type === 'image' ? (
-                        <Image src={zoomedMedia.uri} alt="Zoomed media" width={1200} height={800} className="max-w-full max-h-[90vh] object-contain rounded-lg" />
-                    ) : (
-                        <video src={zoomedMedia.uri} className="max-w-full max-h-[90vh] rounded-lg" controls autoPlay />
-                    )
+                  <Image src={zoomedMedia.uri} alt="Zoomed media" width={1200} height={800} className="max-w-full max-h-[90vh] object-contain rounded-lg" />
                 )}
             </div>
         </DialogContent>

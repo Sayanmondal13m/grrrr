@@ -18,6 +18,7 @@
 
 
 
+
 'use server';
 
 import { customerFAQChatbot, type CustomerFAQChatbotInput } from '@/ai/flows/customer-faq-chatbot';
@@ -64,6 +65,7 @@ export async function askQuestion(
         question: input.question,
         answer: result.answer,
         createdAt: new Date(),
+        mediaDataUri: input.mediaDataUri,
     };
     await db.collection<AiLog>('ai_logs').insertOne(newLog as AiLog);
     revalidatePath('/admin/ai-logs');

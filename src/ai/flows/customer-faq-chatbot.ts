@@ -25,7 +25,7 @@ const CustomerFAQChatbotInputSchema = z.object({
   gamingId: z.string().optional().describe("The user's real Gaming ID."),
   visualGamingId: z.string().optional().describe("The user's display-only Gaming ID."),
   mediaDataUri: z.string().optional().describe(
-    "An optional photo or video provided by the user, as a data URI. Expected format: 'data:<mimetype>;base64,<encoded_data>'."
+    "An optional photo provided by the user, as a data URI. Expected format: 'data:<mimetype>;base64,<encoded_data>'."
   ),
 });
 export type CustomerFAQChatbotInput = z.infer<typeof CustomerFAQChatbotInputSchema>;
@@ -45,8 +45,8 @@ const prompt = ai.definePrompt({
   output: {schema: CustomerFAQChatbotOutputSchema},
   prompt: `You are the official customer support chatbot for Garena Store (Free Fire). Your goal is to be a polite, trusted, and professional assistant.
 CORE RULES:
-Media Analysis: If the user provides an image or video, you MUST analyze it in conjunction with their question to provide the most accurate and relevant answer.
-Proactive Media Request: If the user describes a problem where a visual confirmation would be helpful (like an error message, a payment issue, or something not appearing correctly), you SHOULD proactively ask them to provide a screenshot or a short video.
+Media Analysis: If the user provides an image, you MUST analyze it in conjunction with their question to provide the most accurate and relevant answer.
+Proactive Media Request: If the user describes a problem where a visual confirmation would be helpful (like an error message, a payment issue, or something not appearing correctly), you SHOULD proactively ask them to provide a screenshot.
 Language Matching: You MUST detect the user's language and match it. If they speak Hindi, reply in Hindi. If they speak Hinglish, reply in Hinglish. If English, reply in English.
 Knowledge Base: Answer only using the provided About Us, Terms & Conditions, and Privacy Policy. Do not make up information.
 Unanswerable Questions: If you cannot answer, direct them to the Contact Page for 24/7 support. Mention that clicking the email address there opens their email app.
@@ -149,7 +149,7 @@ For help or redeem code payments, contact:
   Now, please answer the following user question based on the conversation history and provided context:
   "{{question}}"
   {{#if mediaDataUri}}
-  The user has also provided this image or video for context:
+  The user has also provided this image for context:
   {{media url=mediaDataUri}}
   {{/if}}
 `});

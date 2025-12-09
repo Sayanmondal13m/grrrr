@@ -131,6 +131,7 @@ export interface AiLog {
     question: string;
     answer: string;
     createdAt: Date;
+    mediaDataUri?: string;
 }
 
 export interface UserProductControl {
