@@ -112,11 +112,9 @@ Coins can be transferred to friends.
 🛒 How It Works
 1.  **Choose a Product:** Browse the items and click the "Buy" button on the one you want.
 2.  **Start Payment:** In the purchase pop-up, click the "Pay via UPI" button.
-3.  **Select UPI App:** A checkout page will appear showing different UPI apps. Select your preferred app.
-4.  **Use Other UPI Apps:** If your app isn't listed, choose the "Other UPI" option and click "Proceed."
-5.  **Complete Payment:** You will be redirected to your phone's UPI app to complete the payment.
-6.  **Automatic Verification:** After you pay, your purchase is automatically verified, and the order is completed.
-7.  **Track Orders:** You can track all your orders on the “Orders” page.
+3.  **Scan and Pay:** A QR code will appear. Scan this code with any UPI app (like Google Pay, PhonePe, Paytm, etc.) to complete the payment.
+4.  **Automatic Verification:** After you pay, your purchase is automatically verified by our system. You don't need to do anything else.
+5.  **Track Orders:** You can track all your orders on the “Orders” page.
 
 Request refunds via the “Orders” page (subject to review).
 💰 Referral & Wallet System
