@@ -7,15 +7,29 @@ import { sendPushNotification } from '@/lib/push-notifications';
 
 // --- SMS Parsing Logic ---
 function parseSms(body: string): { amount: number | null, upiRef: string | null } {
-    // New Regex for: "Bharat Interface for Money Received INR 1.00..."
-    const amountMatch = body.match(/Received INR\s*(\d+(\.\d{2})?)/);
-    const upiRefMatch = body.match(/Ref:(\d+)/); // Keep old ref match for compatibility
+    // Regex for new format: "Received ₹1 from Sayan Mondal"
+    const newAmountMatch = body.match(/Received ₹\s*([\d,]+(\.\d{1,2})?)/);
+
+    // Old Regex for: "Bharat Interface for Money Received INR 1.00..."
+    const oldAmountMatch = body.match(/Received INR\s*(\d+(\.\d{2})?)/);
+    
+    // Upi Ref for compatibility
+    const upiRefMatch = body.match(/Ref:(\d+)/);
+
+    let amount = null;
+    if (newAmountMatch) {
+      // Remove commas from amount string before parsing
+      amount = parseFloat(newAmountMatch[1].replace(/,/g, ''));
+    } else if (oldAmountMatch) {
+      amount = parseFloat(oldAmountMatch[1]);
+    }
 
     return {
-        amount: amountMatch ? parseFloat(amountMatch[1]) : null,
+        amount,
         upiRef: upiRefMatch ? upiRefMatch[1] : null
     };
 }
+
 
 async function createOrderFromLock(lock: PaymentLock, smsLogId: ObjectId) {
     const db = await connectToDatabase();
